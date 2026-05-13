@@ -5,7 +5,7 @@ let currentDisplayMovies = [];
 
 async function fetchMovies() {
     try {
-        const username = localStorage.getItem('username');
+        const username = sessionStorage.getItem('username');
         if (username) {
             const userRes = await fetch(`https://dluaphim-api.onrender.com/api/users/${username}`);
             const userData = await userRes.json();
@@ -49,7 +49,7 @@ function renderMovies(moviesArray, page = 1) {
             : 'border-color: #555; background-color: transparent;';
 
         const movieCard = `
-            <div class="movie-card" onclick="window.location.href='watch.html?id=${movie._id}'">
+            <div class="movie-card" onclick="window.location.href='detail.html?slug=${movie.slug}'">
                 <div class="image-container">
                     <img src="${movie.thumbnail}" alt="${movie.title}">
                     <div class="badge">${movie.status || 'Đang cập nhật'}</div>
@@ -62,7 +62,7 @@ function renderMovies(moviesArray, page = 1) {
                     <div class="hover-content">
                         <h3 class="hover-title">${movie.title}</h3>
                         <div class="hover-actions">
-                            <button class="btn-play">▶ Xem ngay</button>
+                            <button class="btn-play" onclick="event.stopPropagation(); window.location.href='detail.html?slug=${movie.slug}'">▶ Chi tiết</button>
                             <button class="btn-icon" style="${heartStyle}" onclick="toggleHeart(event, this, '${movie._id}')">${heartIcon}</button>
                         </div>
                         <div class="hover-tags">
@@ -76,104 +76,87 @@ function renderMovies(moviesArray, page = 1) {
         movieList.innerHTML += movieCard;
     });
 
-    // Vẽ thanh nút bấm phân trang ở dưới đáy
     renderPagination(moviesArray.length, page);
 }
 
 // ==========================================
-// HÀM TẠO NÚT BẤM PHÂN TRANG (MỚI)
+// HÀM TẠO NÚT BẤM PHÂN TRANG
 // ==========================================
 function renderPagination(totalMovies, currentPage) {
     const totalPages = Math.ceil(totalMovies / MOVIES_PER_PAGE);
     const paginationDiv = document.getElementById('pagination');
     paginationDiv.innerHTML = '';
 
-    // Nếu chỉ có 1 trang (dưới 28 phim) thì không cần hiện nút chuyển trang
     if (totalPages <= 1) return; 
 
-    // Nút "Lùi lại" («)
     const prevDisabled = currentPage === 1 ? 'disabled' : '';
     paginationDiv.innerHTML += `<button class="page-btn" ${prevDisabled} onclick="changePage(${currentPage - 1})">«</button>`;
 
-    // Các nút số 1, 2, 3...
     for (let i = 1; i <= totalPages; i++) {
         const activeClass = i === currentPage ? 'active' : '';
         paginationDiv.innerHTML += `<button class="page-btn ${activeClass}" onclick="changePage(${i})">${i}</button>`;
     }
 
-    // Nút "Tiến tới" (»)
     const nextDisabled = currentPage === totalPages ? 'disabled' : '';
     paginationDiv.innerHTML += `<button class="page-btn" ${nextDisabled} onclick="changePage(${currentPage + 1})">»</button>`;
 }
 
-// Xử lý sự kiện khi bấm đổi trang
 function changePage(newPage) {
     renderMovies(currentDisplayMovies, newPage);
-    
-    // Tự động cuộn màn hình lên đầu danh sách phim để người xem không phải lướt tay lên lại
     document.querySelector('.filter-bar').scrollIntoView({ behavior: 'smooth' });
 }
+
 function filterMovies(criteria, value) {
     let filteredMovies = [];
     
     if (criteria === 'genre') {
-        // Lọc phim có chứa Thể loại được chọn
         filteredMovies = allMovies.filter(movie => movie.genres && movie.genres.includes(value));
         document.querySelector('.filter-bar span').innerText = `🔽 Thể loại: ${value}`;
     } 
     else if (criteria === 'type') {
-        // Lọc phim Lẻ (single) hoặc Phim Bộ (series, hoathinh, tvshows...)
         if (value === 'single') {
             filteredMovies = allMovies.filter(movie => movie.type === 'single');
             document.querySelector('.filter-bar span').innerText = `🔽 Danh sách: Phim Lẻ`;
         } else {
-            // Gom tất cả những phim không phải 'single' vào Phim Bộ
             filteredMovies = allMovies.filter(movie => movie.type !== 'single');
             document.querySelector('.filter-bar span').innerText = `🔽 Danh sách: Phim Bộ`;
         }
     }
 
-    // Cuộn màn hình xuống khu vực danh sách phim cho người dùng dễ nhìn
     document.getElementById('movie-list').scrollIntoView({ behavior: 'smooth' });
-    
-    // In lại danh sách phim đã lọc
     renderMovies(filteredMovies);
 }
+
 let topMovies = [];
 let currentSlideIndex = 0;
 let slideInterval;
 
-// 1. Tải 5 phim top views từ Backend
 async function fetchTopMovies() {
     try {
         const res = await fetch('https://dluaphim-api.onrender.com/api/movies/top-views');
         topMovies = await res.json();
         
         if(topMovies.length > 0) {
-            renderSlider(0); // Hiển thị phim đầu tiên
-            startAutoSlide(); // Bật chạy tự động
+            renderSlider(0); 
+            startAutoSlide(); 
         }
     } catch (err) {
         console.error('Lỗi tải banner:', err);
     }
 }
 
-// 2. Render nội dung Slider theo Index
 function renderSlider(index) {
     currentSlideIndex = index;
     const movie = topMovies[index];
     const slider = document.getElementById('hero-slider');
     
-    // Đổi ảnh nền to
     slider.style.backgroundImage = `url('${movie.thumbnail}')`;
 
-    // Render thông tin
     const typeDisplay = movie.type === 'single' ? 'Phim Lẻ' : 'Phim Bộ';
     
-    // Render các cục thể loại
     let genresHTML = '';
     if(movie.genres && movie.genres.length > 0) {
-        movie.genres.slice(0, 4).forEach(g => { // Lấy tối đa 4 thể loại
+        movie.genres.slice(0, 4).forEach(g => { 
             genresHTML += `<span class="genre-box">${g}</span>`;
         });
     }
@@ -198,7 +181,7 @@ function renderSlider(index) {
             <p class="slider-desc">Cùng đón xem những tình tiết hấp dẫn và kịch tính nhất trong bộ phim "${movie.title}". Một tác phẩm không thể bỏ lỡ trên hệ thống của chúng tôi.</p>
             
             <div class="slider-actions">
-                <button class="btn-play-circle" onclick="window.location.href='watch.html?id=${movie._id}'">▶</button>
+                <button class="btn-play-circle" onclick="window.location.href='detail.html?slug=${movie.slug}'">▶</button>
                 <button class="btn-icon-circle" onclick="toggleHeart(event, this, '${movie._id}')">🤍</button>
                 <button class="btn-icon-circle">❕</button>
             </div>
@@ -206,7 +189,6 @@ function renderSlider(index) {
     `;
     document.getElementById('slider-content').innerHTML = contentHTML;
 
-    // Render 5 ảnh thu nhỏ (Thumbnails)
     const thumbContainer = document.getElementById('slider-thumbnails');
     thumbContainer.innerHTML = '';
     topMovies.forEach((m, i) => {
@@ -219,15 +201,12 @@ function renderSlider(index) {
     });
 }
 
-// 3. Xử lý khi bấm vào ảnh thu nhỏ
 function changeSlide(index) {
     renderSlider(index);
-    // Reset bộ đếm thời gian để không bị chuyển hình đột ngột khi người dùng vừa bấm
     clearInterval(slideInterval);
     startAutoSlide();
 }
 
-// 4. Chạy tự động chuyển cảnh (5 giây 1 lần)
 function startAutoSlide() {
     slideInterval = setInterval(() => {
         let nextIndex = (currentSlideIndex + 1) % topMovies.length;
@@ -235,108 +214,151 @@ function startAutoSlide() {
     }, 5000); 
 }
 
-// 4. LOGIC THANH TÌM KIẾM
+// THANH TÌM KIẾM
 document.querySelector('.search-bar input').addEventListener('input', (event) => {
-    // Lấy chữ người dùng gõ, chuyển về chữ thường
     const searchTerm = event.target.value.toLowerCase().trim();
-    
-    // Lọc ra những phim có tên chứa chữ vừa gõ
     const filteredMovies = allMovies.filter(movie => 
         movie.title.toLowerCase().includes(searchTerm)
     );
-
-    // In lại danh sách phim đã lọc
     renderMovies(filteredMovies);
 });
 
-// --- QUẢN LÝ ĐĂNG NHẬP VÀ ĐỒNG BỘ AVATAR ---
+// =========================================================================
+// PHẦN ĐƯỢC NÂNG CẤP: QUẢN LÝ ĐĂNG NHẬP, ĐỒNG BỘ TÊN VÀ CHUÔNG THÔNG BÁO
+// =========================================================================
 async function checkLogin() {
-    const username = localStorage.getItem('username');
+    const username = sessionStorage.getItem('username');
     const userContainer = document.querySelector('.user-account');
 
     if (username) {
         let avatarSrc = "https://i.pravatar.cc/150?img=11";
         let displayName = username;
-        let userRole = 'user'; // Biến lưu quyền
+        let userRole = 'user'; 
 
+        // 1. Lấy thông tin user (Avatar, Tên chém gió, Quyền Admin)
         try {
             const res = await fetch(`https://dluaphim-api.onrender.com/api/users/${username}`);
             const userData = await res.json();
             
             if (userData.avatar) avatarSrc = userData.avatar;
             if (userData.fullName) displayName = userData.fullName; 
-            if (userData.role) userRole = userData.role; // Lấy quyền từ Database
+            if (userData.role) userRole = userData.role; 
 
-            // Lưu quyền vào bộ nhớ đệm để các trang khác dùng ké
-            localStorage.setItem('role', userRole);
-
+            sessionStorage.setItem('role', userRole);
+            sessionStorage.setItem('displayName', displayName);
+            sessionStorage.setItem('userAvatar', avatarSrc);
         } catch (error) {
             console.error('Lỗi lấy thông tin user:', error);
         }
 
-        // KIỂM TRA: Nếu là admin thì tạo thêm 1 nút màu xanh lam cực ngầu
+        // Tạo nút Admin nếu có quyền
         let adminButton = '';
         if (userRole === 'admin') {
             adminButton = `<a href="../admin/index.html" style="color: #00d2ff; font-weight: bold;">🛠️ Tới Trang Quản Trị</a>`;
         }
 
-        userContainer.innerHTML = `
-            <div style="position: relative; display: inline-block;">
-                <div class="avatar-btn" onclick="toggleUserMenu()" style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                    <img src="${avatarSrc}" alt="Avatar" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid #ffda76;">
-                    <span style="color: white; font-weight: bold; font-size: 14px;">${displayName} ▾</span>
-                </div>
+        // 2. Tải dữ liệu Chuông thông báo
+        let notiHtml = '';
+        let unreadCount = 0;
+        try {
+            const notiRes = await fetch(`https://dluaphim-api.onrender.com/api/movies/notifications/${username}`);
+            const notifications = await notiRes.json();
+            
+            if (Array.isArray(notifications)) {
+                unreadCount = notifications.length; 
                 
-                <div id="user-menu" class="user-dropdown-menu">
-                    ${adminButton} <!-- Nút Admin sẽ chui vào đây nếu có quyền -->
-                    <a href="profile.html">⚙️ Đổi thông tin & Avatar</a>
-                    <a href="favorites.html" style="color: #ffda76;">💖 Phim đã tim</a>
-                    <a href="history.html">🕒 Lịch sử xem</a>
-                    <hr style="border-color: #444; margin: 5px 0;">
-                    <a href="#" onclick="logout()" style="color: #ff4d4d;">👋 Đăng xuất</a>
+                if(unreadCount > 0) {
+                    notifications.forEach(noti => {
+                        const date = new Date(noti.createdAt).toLocaleString('vi-VN');
+                        // Thêm nút X ở góc phải mỗi thông báo
+                        notiHtml += `
+                            <div style="position: relative; border-bottom: 1px solid #444;">
+                                <a href="watch.html?slug=${noti.movieId}#comment-${noti._id}" style="display: block; padding: 10px 30px 10px 10px; text-decoration: none; color: white;">
+                                    <div style="font-size: 13px; color: #ffda76;">💬 <strong>${noti.fullName || noti.username}</strong> đã trả lời bạn</div>
+                                    <div style="font-size: 12px; color: #ccc; margin-top: 3px;">"${noti.content.substring(0, 30)}..."</div>
+                                    <div style="font-size: 10px; color: #888; margin-top: 5px;">🕒 ${date}</div>
+                                </a>
+                                <button onclick="deleteNoti('${noti._id}', event)" style="position: absolute; top: 10px; right: 5px; background: transparent; border: none; color: #888; font-size: 12px; cursor: pointer; padding: 5px;" title="Xóa thông báo">✖</button>
+                            </div>
+                        `;
+                    });
+                    
+                    // Thêm nút Xóa Tất Cả ở dưới cùng
+                    notiHtml += `
+                        <div style="text-align: center; padding: 10px; background: #2a2a2f;">
+                            <button onclick="clearAllNoti(event)" style="background: #ff4d4d; color: white; border: none; padding: 5px 15px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold;">🗑 Xóa tất cả</button>
+                        </div>
+                    `;
+                } else {
+                    notiHtml = `<div style="padding: 10px; color: #888; text-align: center; font-size: 13px;">Không có thông báo mới</div>`;
+                }
+            }
+        } catch(e){}
+
+        // 3. Render giao diện Chuông & Avatar lên Header
+        userContainer.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <!-- Khu Vực Chuông -->
+                <div style="position: relative; cursor: pointer;" onclick="document.getElementById('noti-menu').classList.toggle('show')">
+                    <span style="font-size: 24px;">🔔</span>
+                    ${unreadCount > 0 ? `<span style="position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 11px; font-weight: bold; border: 2px solid #1c1c1f;">${unreadCount}</span>` : ''}
+                    
+                    <div id="noti-menu" class="user-dropdown-menu" style="width: 280px; right: -20px; max-height: 350px; overflow-y: auto; background: #1c1c1f; border: 1px solid #444; box-shadow: 0 5px 15px rgba(0,0,0,0.8); z-index: 9999;">
+                        <h4 style="margin: 0; padding: 12px; border-bottom: 1px solid #444; color: white; background: #2a2a2f;">Thông báo của bạn</h4>
+                        ${notiHtml}
+                    </div>
+                </div>
+
+                <!-- Khu Vực Avatar -->
+                <div style="position: relative; display: inline-block;">
+                    <div class="avatar-btn" onclick="document.getElementById('user-menu').classList.toggle('show')" style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <img src="${avatarSrc}" alt="Avatar" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid #ffda76;">
+                        <span style="color: white; font-weight: bold; font-size: 14px;">${displayName} ▾</span>
+                    </div>
+                    
+                    <div id="user-menu" class="user-dropdown-menu">
+                        ${adminButton} 
+                        <a href="profile.html">⚙️ Đổi thông tin & Avatar</a>
+                        <a href="favorites.html" style="color: #ffda76;">💖 Phim đã tim</a>
+                        <a href="history.html">🕒 Lịch sử xem</a>
+                        <hr style="border-color: #444; margin: 5px 0;">
+                        <a href="#" onclick="logout()" style="color: #ff4d4d;">👋 Đăng xuất</a>
+                    </div>
                 </div>
             </div>
         `;
     }
 }
 
-// Hàm bật/tắt menu Avatar
-function toggleUserMenu() {
-    document.getElementById('user-menu').classList.toggle('show');
-}
-
-// Bấm ra ngoài khoảng trống thì tự động đóng menu Avatar lại
+// Bấm ra ngoài khoảng trống thì tự động đóng menu Avatar VÀ menu Chuông
 window.addEventListener('click', function(event) {
-    if (!event.target.closest('.avatar-btn')) {
-        const dropdowns = document.getElementsByClassName("user-dropdown-menu");
-        for (let i = 0; i < dropdowns.length; i++) {
-            if (dropdowns[i].classList.contains('show')) {
-                dropdowns[i].classList.remove('show');
-            }
-        }
+    if (!event.target.closest('.avatar-btn') && !event.target.closest('.user-dropdown-menu') && !event.target.closest('[onclick*="noti-menu"]')) {
+        const dropdowns = document.querySelectorAll(".user-dropdown-menu");
+        dropdowns.forEach(dropdown => dropdown.classList.remove('show'));
     }
 });
 
 function logout() {
-    localStorage.clear(); window.location.reload();
+    sessionStorage.clear(); window.location.reload();
 }
-// Hàm thả tim phim
+
+// ==========================================
+// HÀM THẢ TIM & CHATBOT AI (GIỮ NGUYÊN)
+// ==========================================
 async function toggleHeart(event, btn, movieId) {
-    event.stopPropagation(); // Ngăn không cho click nhầm vào ảnh phim
+    event.stopPropagation(); 
     
-    const username = localStorage.getItem('username');
+    const username = sessionStorage.getItem('username');
     if (!username) {
         alert('Bạn cần đăng nhập để thả tim phim nhé!');
         window.location.href = 'login.html';
         return;
     }
 
-    // Hiệu ứng tải tạm thời để người dùng biết đang xử lý
     const originalText = btn.innerText;
     btn.innerText = '⏳';
 
     try {
-        // Gửi yêu cầu thả/bỏ tim xuống Backend
         const response = await fetch('https://dluaphim-api.onrender.com/api/users/toggle-favorite', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -345,7 +367,6 @@ async function toggleHeart(event, btn, movieId) {
         
         const data = await response.json();
 
-        // Thay đổi giao diện tim theo kết quả trả về từ Backend
         if (data.isFavorited) {
             btn.innerText = '💖';
             btn.style.borderColor = '#ff4d4d';
@@ -357,16 +378,13 @@ async function toggleHeart(event, btn, movieId) {
         }
     } catch (error) {
         console.error('Lỗi khi thả tim:', error);
-        btn.innerText = originalText; // Trả lại tim cũ nếu bị lỗi mạng
+        btn.innerText = originalText; 
         alert('Có lỗi xảy ra, vui lòng thử lại!');
     }
 }
-// ==========================================
-// XỬ LÝ CHATBOT AI
-// ==========================================
+
 function toggleChat() {
     const chatWin = document.getElementById('chat-window');
-    // Bật tắt mượt mà
     if (chatWin.style.display === 'none' || chatWin.style.display === '') {
         chatWin.style.display = 'flex';
         document.getElementById('chat-input').focus();
@@ -382,16 +400,14 @@ async function sendChatMessage() {
 
     if (!userText) return;
 
-    // 1. In tin nhắn của User (Bong bóng bên phải)
     msgBox.innerHTML += `
         <div style="background: #ffda76; color: black; padding: 10px 15px; border-radius: 15px 15px 0 15px; max-width: 85%; align-self: flex-end; font-size: 14px;">
             ${userText}
         </div>
     `;
     inputField.value = '';
-    msgBox.scrollTop = msgBox.scrollHeight; // Cuộn xuống đáy
+    msgBox.scrollTop = msgBox.scrollHeight; 
 
-    // 2. In bong bóng "Đang gõ chữ..." của AI
     const loadingId = 'loading-' + Date.now();
     msgBox.innerHTML += `
         <div id="${loadingId}" style="background: #333; color: #888; padding: 10px 15px; border-radius: 15px 15px 15px 0; max-width: 85%; align-self: flex-start; font-size: 14px; font-style: italic;">
@@ -400,7 +416,6 @@ async function sendChatMessage() {
     `;
     msgBox.scrollTop = msgBox.scrollHeight;
 
-    // 3. Gọi API sang Node.js
     try {
         const response = await fetch('https://dluaphim-api.onrender.com/api/chat', {
             method: 'POST',
@@ -410,7 +425,6 @@ async function sendChatMessage() {
         
         const data = await response.json();
         
-        // 4. Xóa bong bóng "đang gõ" và in câu trả lời thật của AI ra
         document.getElementById(loadingId).remove();
         msgBox.innerHTML += `
             <div style="background: #333; color: white; padding: 10px 15px; border-radius: 15px 15px 15px 0; max-width: 85%; align-self: flex-start; font-size: 14px; line-height: 1.5;">
@@ -428,7 +442,34 @@ function handleChatEnter(event) {
         sendChatMessage();
     }
 }
+// ================= HÀM XÓA THÔNG BÁO TỪ MENU CHUÔNG =================
+window.deleteNoti = async function(notiId, event) {
+    event.stopPropagation(); // Ngăn trình duyệt nhảy link sang trang phim
+    try {
+        await fetch(`https://dluaphim-api.onrender.com/api/movies/notifications/${notiId}/read`, { method: 'PUT' });
+        
+        // Gọi lại hàm để vẽ lại cái chuông
+        if(typeof checkLogin === 'function') await checkLogin();
+        if(typeof checkLoginState === 'function') await checkLoginState();
+        
+        // Mở lại menu chuông cho đỡ bị tắt đột ngột
+        document.getElementById('noti-menu').classList.add('show');
+    } catch(e) {}
+}
 
+window.clearAllNoti = async function(event) {
+    event.stopPropagation();
+    const username = sessionStorage.getItem('username');
+    if(!username) return;
+    try {
+        await fetch(`https://dluaphim-api.onrender.com/api/movies/notifications/clear-all/${username}`, { method: 'PUT' });
+        
+        if(typeof checkLogin === 'function') await checkLogin();
+        if(typeof checkLoginState === 'function') await checkLoginState();
+        
+        document.getElementById('noti-menu').classList.add('show');
+    } catch(e) {}
+}
 document.getElementById('chat-window').style.display = 'none';
 // Chạy khởi tạo
 fetchMovies();

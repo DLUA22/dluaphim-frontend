@@ -1,4 +1,4 @@
-const currentUserRole = localStorage.getItem('role');
+const currentUserRole = sessionStorage.getItem('role');
 if (currentUserRole !== 'admin') {
     alert('Cảnh báo: Bạn không có quyền truy cập vào khu vực quản trị!');
     window.location.href = '../user/index.html';

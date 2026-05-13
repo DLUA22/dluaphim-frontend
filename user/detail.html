@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chi Tiết Phim - DLUAPHIM</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <header class="navbar">
+        <div class="logo"><h2 onclick="window.location.href='index.html'" style="cursor: pointer;">🎬 DLUAPHIM</h2></div>
+        <div class="user-account">
+            <a href="login.html" id="user-btn" style="text-decoration: none;"><button class="btn-login">👤 Thành viên</button></a>
+        </div>
+    </header>
+
+    <!-- Hình nền mờ -->
+    <div class="detail-backdrop" id="d-backdrop"></div>
+
+    <!-- BỐ CỤC CHÍNH -->
+    <div class="detail-container">
+        
+        <!-- CỘT TRÁI (POSTER & THÔNG TIN CƠ BẢN) -->
+        <div class="detail-left">
+            <div class="poster-box"><img id="d-poster" src="" alt="Poster"></div>
+            <h1 id="d-name">Đang tải...</h1>
+            <h3 id="d-origin-name"></h3>
+            
+            <div class="meta-tags">
+                <span class="imdb">IMDb <span id="d-imdb">N/A</span></span>
+                <span id="d-quality">HD</span>
+                <span id="d-year">2026</span>
+                <span id="d-time">...</span>
+            </div>
+
+            <div class="genre-tags" id="d-genres"></div>
+            <div class="status-box">🔄 Đã chiếu: <span id="d-status">...</span></div>
+            
+            <div class="desc-box">
+                <strong>Giới thiệu:</strong>
+                <div id="d-content">...</div>
+            </div>
+        </div>
+
+        <!-- CỘT PHẢI (HÀNH ĐỘNG & TẬP PHIM) -->
+        <div class="detail-right">
+            <!-- Thanh Công Cụ (Nút Xem Ngay + Các icon) -->
+            <div class="action-bar">
+                <button class="btn-play-now" id="btn-play-now">▶ Xem Ngay</button>
+                <div class="icon-group">
+                    <button class="icon-btn"><span>🤍</span> Yêu thích</button>
+                    <button class="icon-btn"><span>➕</span> Thêm vào</button>
+                    <button class="icon-btn"><span>↗️</span> Chia sẻ</button>
+                    <div class="rating-box">⭐ 10 Điểm</div>
+                </div>
+            </div>
+
+            <!-- Tab menu -->
+            <div class="tabs">
+                <div class="tab-item active">Tập phim</div>
+                <div class="tab-item">Gallery</div>
+                <div class="tab-item">Diễn viên</div>
+                <div class="tab-item" onclick="document.getElementById('comments-section').scrollIntoView({behavior: 'smooth'})">Bình luận</div>
+            </div>
+
+            <!-- Phần chọn Server -->
+            <div class="server-list" id="server-list">
+                <strong style="margin-right: 10px; color: #fff;">Mạng:</strong>
+                <!-- Nút server sẽ render bằng JS ở đây -->
+            </div>
+
+            <!-- Lưới Tập Phim -->
+            <div class="episode-grid" id="episode-grid">
+                <!-- Nút tập phim sẽ render bằng JS ở đây -->
+            </div>
+
+            <!-- Khu vực Bình luận -->
+            <div id="comments-section" style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #333;">
+                <h3 style="margin-bottom: 15px; color: #ffda76;">💬 Bình luận (<span id="comment-count">0</span>)</h3>
+                <div id="comment-form-area"></div>
+                <div id="comments-list" style="margin-top: 30px;">
+                    <div style="color: #888; text-align: center;">Đang tải bình luận...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="detail.js"></script>
+</body>
+</html>

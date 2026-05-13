@@ -57,7 +57,7 @@
     </main>
 
     <script>
-        const username = localStorage.getItem('username');
+        const username = sessionStorage.getItem('username');
         if (!username) window.location.href = 'index.html';
 
         // 1. Lấy thông tin User để vẽ Avatar (Đồng bộ với Profile)
@@ -81,7 +81,7 @@
                             <a href="favorites.html" style="color: #ffda76;">💖 Phim đã tim</a>
                             <a href="history.html">🕒 Lịch sử xem</a>
                             <hr style="border-color: #333; margin: 5px 0;">
-                            <a href="#" onclick="localStorage.clear(); window.location.href='index.html';" style="color: #ff4d4d;">👋 Đăng xuất</a>
+                            <a href="#" onclick="sessionStorage.clear(); window.location.href='index.html';" style="color: #ff4d4d;">👋 Đăng xuất</a>
                         </div>
                     </div>
                 `;

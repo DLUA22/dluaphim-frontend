@@ -32,7 +32,7 @@
     </main>
 
     <script>
-        const username = localStorage.getItem('username');
+        const username = sessionStorage.getItem('username');
         if (!username) window.location.href = 'index.html';
 
         async function loadHistory() {
