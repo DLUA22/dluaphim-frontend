@@ -24,7 +24,7 @@
     <main class="main-content" style="max-width: 1200px; margin: 0 auto;">
         
         <!-- KHUNG PHÁT VIDEO -->
-        <div id="player-container" style="width: 100%; aspect-ratio: 16/9; max-height: 85vh; background: #000; border-radius: 8px; overflow: hidden; margin-bottom: 20px;"></div>
+        <div id="player-container" style="width: 100%; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);"></div>
 
         <div class="watch-layout">
             <div class="watch-left">
@@ -200,6 +200,14 @@
         }
 
         function playVideoM3U8(url) {
+            // 🚨 BƯỚC QUAN TRỌNG: DỌN RÁC LUỒNG PHIM CŨ TRƯỚC KHI BẬT PHIM MỚI
+            if (window.hls) {
+                window.hls.destroy(); // Giết luồng tải HLS cũ, chống lỗi Blob Not Found
+            }
+            if (window.player) {
+                window.player.destroy(); // Xóa bỏ giao diện Plyr cũ
+            }
+
             const playerContainer = document.getElementById('player-container');
             // Xóa chữ "controls" trong thẻ video đi để nhường quyền cho Plyr
             playerContainer.innerHTML = `<video id="hls-video" width="100%" height="100%" crossorigin playsinline style="background: #000; outline: none;"></video>`;
@@ -212,34 +220,22 @@
                     'progress', 'current-time', 'duration', 'mute', 
                     'volume', 'settings', 'pip', 'airplay', 'fullscreen'
                 ],
-                settings: ['quality', 'speed'], // Hiện bánh răng chỉnh chất lượng và tốc độ
+                settings: ['quality', 'speed'], 
                 speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
                 i18n: {
-                    restart: 'Chơi lại',
-                    rewind: 'Lùi 10s',
-                    play: 'Phát',
-                    pause: 'Tạm dừng',
-                    fastForward: 'Tới 10s',
-                    seek: 'Tìm kiếm',
-                    played: 'Đã phát',
-                    buffered: 'Đã tải',
-                    currentTime: 'Thời gian hiện tại',
-                    duration: 'Thời lượng',
-                    volume: 'Âm lượng',
-                    mute: 'Tắt tiếng',
-                    unmute: 'Bật tiếng',
-                    settings: 'Cài đặt',
-                    speed: 'Tốc độ',
-                    normal: 'Bình thường',
-                    quality: 'Chất lượng',
-                    loop: 'Lặp lại',
-                    enterFullscreen: 'Toàn màn hình',
-                    exitFullscreen: 'Thoát toàn màn hình',
+                    restart: 'Chơi lại', rewind: 'Lùi 10s', play: 'Phát', pause: 'Tạm dừng',
+                    fastForward: 'Tới 10s', seek: 'Tìm kiếm', played: 'Đã phát', buffered: 'Đã tải',
+                    currentTime: 'Thời gian hiện tại', duration: 'Thời lượng', volume: 'Âm lượng',
+                    mute: 'Tắt tiếng', unmute: 'Bật tiếng', settings: 'Cài đặt', speed: 'Tốc độ',
+                    normal: 'Bình thường', quality: 'Chất lượng', loop: 'Lặp lại',
+                    enterFullscreen: 'Toàn màn hình', exitFullscreen: 'Thoát toàn màn hình',
                 }
             };
 
             if (Hls.isSupported()) {
                 const hls = new Hls();
+                window.hls = hls; // Lưu biến hls ra ngoài để lần sau có cái mà dọn rác
+
                 hls.loadSource(url);
 
                 hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
@@ -258,8 +254,7 @@
                     };
 
                     // Khởi tạo giao diện siêu xịn
-                    const player = new Plyr(video, playerOptions);
-                    window.hls = hls; 
+                    window.player = new Plyr(video, playerOptions); // Lưu biến player ra ngoài để dọn rác
 
                     video.play().catch(() => console.log("Cần click để Play"));
                 });
@@ -269,11 +264,10 @@
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                 // Dành riêng cho các máy dùng Safari (iPhone/Macbook)
                 video.src = url;
-                const player = new Plyr(video, playerOptions);
+                window.player = new Plyr(video, playerOptions);
                 video.addEventListener('loadedmetadata', function() { video.play(); });
             }
         }
-
         // =========================================================
         // COPY BỘ NÃO "SIÊU CẤP" TỪ DETAIL.JS SANG ĐÂY
         // =========================================================
@@ -529,6 +523,34 @@
                 document.getElementById('noti-menu').classList.add('show');
             } catch(e) {}
         }
+        // =========================================================
+        // CẢM BIẾN XOAY MÀN HÌNH TỰ ĐỘNG FULLSCREEN (ĐÃ FIX LỖI)
+        // =========================================================
+        window.addEventListener("orientationchange", function() {
+            // Đợi 0.3 giây để điện thoại hoàn tất hiệu ứng xoay
+            setTimeout(() => {
+                let angle = (window.screen && window.screen.orientation) 
+                            ? window.screen.orientation.angle 
+                            : window.orientation;
+                
+                // Nếu xoay ngang (90, -90, 270 độ)
+                if (angle === 90 || angle === -90 || angle === 270) {
+                    if (window.player && !window.player.fullscreen.active) {
+                        try { 
+                            window.player.fullscreen.enter(); 
+                        } catch(err) { console.log("Không thể tự động Fullscreen"); }
+                    }
+                } 
+                // Nếu cầm dọc (0, 180 độ)
+                else {
+                    if (window.player && window.player.fullscreen.active) {
+                        try { 
+                            window.player.fullscreen.exit(); 
+                        } catch(err) {}
+                    }
+                }
+            }, 300); 
+        });
     </script>
 </body>
 </html>

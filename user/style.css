@@ -583,10 +583,10 @@ body {
     
     /* 2. TRÌNH PHÁT VIDEO (QUAN TRỌNG NHẤT) */
     #player-container {
-        width: 100vw !important; /* Rộng 100% màn hình thiết bị */
+        width: 100vw !important; 
         height: auto !important;
-        aspect-ratio: 16/9 !important; /* Tỉ lệ vàng của YouTube */
-        border-radius: 0 !important; /* Xóa bo góc để ép sát viền */
+        aspect-ratio: auto !important; 
+        border-radius: 0 !important; 
         margin-bottom: 15px !important;
     }
 
