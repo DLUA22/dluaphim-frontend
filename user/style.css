@@ -349,7 +349,7 @@ body {
     .movie-card { background: #1c1c1f !important; border-radius: 8px !important; overflow: hidden; padding-bottom: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
     .image-container img { height: 220px !important; border-radius: 0 !important; }
     
-    .title { font-size: 13px !important; padding: 8px 8px 0 8px !important; white-space: normal !important; height: 34px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; text-align: center !important; line-height: 1.3; }
+    .title { font-size: 13px !important; padding: 8px 8px 0 8px !important; white-space: normal !important; height: 34px; display: -webkit-box; -webkit-line-clamp: 2;line-clamp: 2; -webkit-box-orient: vertical; text-align: center !important; line-height: 1.3; }
     .subtitle { text-align: center !important; font-size: 11px !important; margin-bottom: 5px; }
 
     /* 5. VÔ HIỆU HÓA HOVER */
@@ -637,7 +637,8 @@ body {
         font-size: 12px !important;
         line-height: 1.5 !important;
         display: -webkit-box;
-        -webkit-line-clamp: 3; /* Cắt gọn mô tả thành 3 dòng, dài quá hiện ... */
+        -webkit-line-clamp: 3; 
+        line-clamp: 3;
         -webkit-box-orient: vertical;
         overflow: hidden;
     }
