@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách yêu thích - DLUAPHIM</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* CSS bổ sung riêng cho trang Favorites để tăng độ sang trọng */
+        body { background-color: #0f0f11; margin: 0; }
+        .page-header {
+            padding: 100px 50px 30px 50px;
+            background: linear-gradient(to bottom, #1a1a20 0%, #0f0f11 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .page-header h1 {
+            font-size: 32px; color: #fff; margin: 0 0 10px 0; font-weight: 700;
+        }
+        .page-header p {
+            color: #888; font-size: 15px; margin: 0;
+        }
+        .empty-state {
+            text-align: center; padding: 100px 0; grid-column: 1 / -1;
+        }
+        .btn-explore {
+            background-color: #ffda76; color: #111; border: none;
+            padding: 12px 30px; border-radius: 30px; font-weight: bold;
+            font-size: 15px; cursor: pointer; margin-top: 20px; transition: 0.3s;
+        }
+        .btn-explore:hover { background-color: #ffcc00; transform: scale(1.05); }
+    </style>
+</head>
+<body>
+    <!-- Navbar đồng bộ phong cách cao cấp -->
+    <header class="navbar" style="background-color: rgba(15, 15, 17, 0.9); backdrop-filter: blur(10px);">
+        <div class="logo">
+            <h2 onclick="window.location.href='index.html'" style="cursor: pointer;">🎬 DLUAPHIM</h2>
+        </div>
+        <nav class="menu">
+        </nav>
+        <div class="user-account" id="user-info">
+            <!-- JS render Avatar -->
+        </div>
+    </header>
+
+    <!-- Khu vực tiêu đề -->
+    <div class="page-header">
+        <h1>Danh Sách Yêu Thích</h1>
+        <p><span id="fav-count" style="color: #fff; font-weight: bold;">0</span> nội dung đã lưu</p>
+    </div>
+
+    <!-- Khu vực hiển thị lưới phim -->
+    <main class="main-content" style="padding: 30px 50px;">
+        <div class="movie-grid" id="favorite-list">
+            <!-- Dữ liệu render từ JS -->
+        </div>
+    </main>
+
+    <script>
+        const username = localStorage.getItem('username');
+        if (!username) window.location.href = 'index.html';
+
+        // 1. Lấy thông tin User để vẽ Avatar (Đồng bộ với Profile)
+        async function loadUserInfo() {
+            try {
+                const userRes = await fetch(`https://dluaphim-api.onrender.com/api/users/${username}`);
+                const userData = await userRes.json();
+                
+                const displayAvatar = userData.avatar || "https://i.pravatar.cc/150?img=11";
+                const displayName = userData.fullName || username;
+
+                document.getElementById('user-info').innerHTML = `
+                    <div style="position: relative; display: inline-block;">
+                        <div class="avatar-btn" onclick="document.getElementById('user-menu').classList.toggle('show')" style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                            <img src="${displayAvatar}" alt="Avatar" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 1px solid #ffda76;">
+                            <span style="color: white; font-size: 14px; font-weight: bold;">${displayName} ▾</span>
+                        </div>
+                        
+                        <div id="user-menu" class="user-dropdown-menu">
+                            <a href="profile.html">⚙️ Đổi thông tin & Avatar</a>
+                            <a href="favorites.html" style="color: #ffda76;">💖 Phim đã tim</a>
+                            <a href="history.html">🕒 Lịch sử xem</a>
+                            <hr style="border-color: #333; margin: 5px 0;">
+                            <a href="#" onclick="localStorage.clear(); window.location.href='index.html';" style="color: #ff4d4d;">👋 Đăng xuất</a>
+                        </div>
+                    </div>
+                `;
+            } catch (err) { console.error(err); }
+        }
+
+        // 2. Tải danh sách phim bằng API tối ưu (Production)
+        async function loadFavorites() {
+            try {
+                // Gọi API mới: Chỉ lấy những phim đã tim thay vì tải cả kho phim
+                const res = await fetch(`https://dluaphim-api.onrender.com/api/users/${username}/favorites-details`);
+                const favoriteMovies = await res.json();
+
+                document.getElementById('fav-count').innerText = favoriteMovies.length;
+                const listDiv = document.getElementById('favorite-list');
+
+                if (favoriteMovies.length === 0) {
+                    showEmptyState();
+                    return;
+                }
+
+                listDiv.innerHTML = '';
+                favoriteMovies.forEach(movie => {
+                    const genresDisplay = movie.genres && movie.genres.length > 0 ? movie.genres.join(' • ') : 'Đang cập nhật';
+                    const typeDisplay = movie.type === 'single' ? 'Phim Lẻ' : 'Phim Bộ';
+
+                    // Đã thêm id="fav-card-..." để xóa mượt mà bằng Javascript
+                    const movieCard = `
+                        <div class="movie-card" id="fav-card-${movie._id}" onclick="window.location.href='watch.html?id=${movie._id}'">
+                            <div class="image-container">
+                                <img src="${movie.thumbnail}" alt="${movie.title}">
+                                <div class="badge">${movie.status || 'Đang cập nhật'}</div>
+                            </div>
+                            <h3 class="title">${movie.title}</h3>
+                            
+                            <div class="hover-card">
+                                <div class="hover-image"><img src="${movie.thumbnail}"></div>
+                                <div class="hover-content">
+                                    <h3 class="hover-title">${movie.title}</h3>
+                                    <div class="hover-actions">
+                                        <button class="btn-play">▶ Xem ngay</button>
+                                        <!-- Nút gỡ tim -->
+                                        <button class="btn-icon" style="border-color: #ff4d4d; background-color: rgba(255, 77, 77, 0.1);" onclick="removeFavorite(event, '${movie._id}')">💖</button>
+                                    </div>
+                                    <div class="hover-tags">
+                                        <span class="tag-imdb">IMDb 8.0</span><span>${typeDisplay}</span>
+                                    </div>
+                                    <p class="hover-genres">${genresDisplay}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    listDiv.innerHTML += movieCard;
+                });
+
+            } catch (error) {
+                console.error('Lỗi tải phim yêu thích:', error);
+            }
+        }
+
+        // 3. Hiệu ứng gỡ phim mượt mà (Optimistic UI Update)
+        async function removeFavorite(event, movieId) {
+            event.stopPropagation(); // Không cho click nhảy sang trang phim
+            
+            // Xóa thẻ html khỏi màn hình ngay lập tức (Tạo cảm giác phản hồi cực nhanh)
+            const card = document.getElementById(`fav-card-${movieId}`);
+            if(card) {
+                card.style.opacity = '0';
+                setTimeout(() => card.remove(), 300); // Đợi 0.3s cho mờ đi rồi xóa hẳn
+            }
+
+            // Trừ số lượng ở trên cùng
+            const countEl = document.getElementById('fav-count');
+            let currentCount = parseInt(countEl.innerText);
+            countEl.innerText = currentCount - 1;
+
+            if (currentCount - 1 <= 0) {
+                setTimeout(() => showEmptyState(), 300);
+            }
+            
+            // Âm thầm gửi lệnh xuống Backend để lưu thay đổi
+            try {
+                await fetch('https://dluaphim-api.onrender.com/api/users/toggle-favorite', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: username, movieId: movieId })
+                });
+            } catch (error) {
+                console.error('Lỗi khi gỡ tim:', error);
+            }
+        }
+
+        function showEmptyState() {
+            const listDiv = document.getElementById('favorite-list');
+            listDiv.innerHTML = `
+                <div class="empty-state" style="animation: fadeIn 0.5s;">
+                    <div style="font-size: 60px; margin-bottom: 20px; opacity: 0.3;">🗂️</div>
+                    <h2 style="color: #fff; margin-bottom: 10px; font-weight: normal;">Danh sách trống</h2>
+                    <p style="color: #666; margin-bottom: 30px;">Bạn chưa thêm nội dung nào vào danh sách yêu thích.</p>
+                    <button class="btn-explore" onclick="window.location.href='index.html'">Khám phá nội dung mới</button>
+                </div>
+            `;
+        }
+
+        // Tắt menu popup
+        window.addEventListener('click', function(event) {
+            if (!event.target.closest('.avatar-btn')) {
+                const dropdowns = document.getElementsByClassName("user-dropdown-menu");
+                for (let i = 0; i < dropdowns.length; i++) {
+                    dropdowns[i].classList.remove('show');
+                }
+            }
+        });
+
+        // Khởi chạy
+        loadUserInfo();
+        loadFavorites();
+    </script>
+</body>
+</html>

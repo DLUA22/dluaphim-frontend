@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Lịch sử xem - DLUAPHIM</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { background-color: #0f0f11; margin: 0; }
+        .page-header { padding: 100px 50px 30px 50px; background: linear-gradient(to bottom, #1a1a20 0%, #0f0f11 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; align-items: flex-end; }
+        .empty-state { text-align: center; padding: 100px 0; grid-column: 1 / -1; }
+        .btn-clear { background: transparent; color: #ff4d4d; border: 1px solid #ff4d4d; padding: 8px 15px; border-radius: 4px; cursor: pointer; transition: 0.3s; }
+        .btn-clear:hover { background: rgba(255, 77, 77, 0.1); }
+    </style>
+</head>
+<body>
+    <header class="navbar" style="background-color: rgba(15, 15, 17, 0.9);">
+        <div class="logo"><h2 onclick="window.location.href='index.html'" style="cursor: pointer;">🎬 DLUAPHIM</h2></div>
+        <nav class="menu"><a href="index.html">Trang Chủ</a><a href="history.html" style="color: #ffda76; font-weight: bold;">Lịch Sử Xem</a></nav>
+        <div class="user-account"><a href="index.html" style="color: white; text-decoration: none;">⬅ Thoát</a></div>
+    </header>
+
+    <div class="page-header">
+        <div>
+            <h1 style="font-size: 32px; color: #fff; margin: 0 0 10px 0;">🕒 Lịch Sử Xem Phim</h1>
+            <p style="color: #888; margin: 0;">Các bộ phim bạn đã xem gần đây</p>
+        </div>
+        <button class="btn-clear" onclick="clearHistory()">🗑 Xóa lịch sử</button>
+    </div>
+
+    <main class="main-content" style="padding: 30px 50px;">
+        <div class="movie-grid" id="history-list"></div>
+    </main>
+
+    <script>
+        const username = localStorage.getItem('username');
+        if (!username) window.location.href = 'index.html';
+
+        async function loadHistory() {
+            try {
+                const userRes = await fetch(`https://dluaphim-api.onrender.com/api/users/${username}`);
+                const userData = await userRes.json();
+                
+                // Đảo ngược mảng để phim xem gần nhất (nằm ở cuối) nổi lên đầu
+                const historyIds = (userData.history || []).reverse(); 
+
+                const listDiv = document.getElementById('history-list');
+
+                if (historyIds.length === 0) {
+                    listDiv.innerHTML = `<div class="empty-state"><h2 style="color: #fff; font-weight: normal;">Chưa có lịch sử</h2><p style="color: #666;">Bạn chưa xem bộ phim nào gần đây.</p></div>`;
+                    return;
+                }
+
+                const movieRes = await fetch('https://dluaphim-api.onrender.com/api/movies');
+                const allMovies = await movieRes.json();
+                
+                listDiv.innerHTML = '';
+                // Lặp theo đúng thứ tự lịch sử
+                historyIds.forEach(id => {
+                    const movie = allMovies.find(m => m._id === id);
+                    if (movie) {
+                        listDiv.innerHTML += `
+                            <div class="movie-card" onclick="window.location.href='watch.html?id=${movie._id}'">
+                                <div class="image-container">
+                                    <img src="${movie.thumbnail}">
+                                </div>
+                                <h3 class="title">${movie.title}</h3>
+                                <p class="subtitle" style="color: #aaa;">Đã xem</p>
+                            </div>
+                        `;
+                    }
+                });
+            } catch (error) { console.error(error); }
+        }
+
+        async function clearHistory() {
+            if(confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử xem phim?')) {
+                try {
+                    await fetch(`https://dluaphim-api.onrender.com/api/users/${username}/history`, { method: 'DELETE' });
+                    loadHistory(); // Tải lại trang thành trạng thái trống
+                } catch (error) { console.error(error); }
+            }
+        }
+
+        loadHistory();
+    </script>
+</body>
+</html>

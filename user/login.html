@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng nhập - DLUAPHIM</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Dùng chung style với trang register */
+        .auth-container { max-width: 400px; margin: 100px auto; background: #1c1c1f; padding: 30px; border-radius: 8px; }
+        .auth-container h2 { text-align: center; margin-bottom: 20px; color: #ffcc00; }
+        .auth-container input { width: 100%; padding: 12px; margin-bottom: 15px; background: #2a2a2f; border: none; color: white; border-radius: 5px; }
+        .auth-container button { width: 100%; padding: 12px; background: #ffcc00; border: none; color: black; font-weight: bold; cursor: pointer; border-radius: 5px; }
+        .auth-container p { text-align: center; margin-top: 15px; font-size: 14px; }
+        .auth-container a { color: #ffcc00; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <h2>Đăng Nhập</h2>
+        <input type="text" id="login-username" placeholder="Tên đăng nhập">
+        <input type="password" id="login-password" placeholder="Mật khẩu">
+        <button onclick="login()">Đăng Nhập</button>
+        <p>Chưa có tài khoản? <a href="register.html">Đăng ký ngay</a></p>
+    </div>
+
+    <script>
+        async function login() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+
+            const res = await fetch('https://dluaphim-api.onrender.com/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                // Lưu thông tin vào bộ nhớ trình duyệt (localStorage)
+                localStorage.setItem('username', data.username);
+                localStorage.setItem('role', data.role);
+
+                alert('Chào mừng ' + data.username + ' quay trở lại!');
+
+                // PHÂN QUYỀN CHUYỂN HƯỚNG
+                if (data.role === 'admin') {
+                    window.location.href = '../admin/index.html'; // Vào trang Admin
+                } else {
+                    window.location.href = 'index.html'; // Về trang chủ User
+                }
+            } else {
+                alert(data.message);
+            }
+        }
+    </script>
+</body>
+</html>

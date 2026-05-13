@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Thông tin tài khoản - DLUAPHIM</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Nhúng thư viện Cropper.js -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <style>
+        body { background-color: #0f0f11; color: white; margin: 0; padding-bottom: 50px; font-family: sans-serif; }
+        .profile-wrapper { max-width: 1000px; margin: 40px auto; display: flex; gap: 30px; }
+        
+        /* Cột trái: Avatar (Dùng Flexbox để ép mọi thứ vào chính giữa tuyệt đối) */
+        .left-col { 
+            background: #1c1c1f; padding: 40px 20px; border-radius: 12px; 
+            width: 300px; height: fit-content; 
+            display: flex; flex-direction: column; align-items: center; 
+        }
+        .avatar-preview { 
+            width: 150px; height: 150px; border-radius: 50%; object-fit: cover; 
+            border: 4px solid #ffda76; margin-bottom: 15px; 
+        }
+        #display-username {
+            font-weight: bold; font-size: 22px; margin: 0 0 20px 0; color: white; text-align: center;
+        }
+        .upload-btn { 
+            background: #333; color: white; padding: 10px 20px; border-radius: 30px; 
+            cursor: pointer; border: 1px solid #555; transition: 0.3s; 
+        }
+        .upload-btn:hover { background: #444; border-color: #ffda76; }
+        
+        /* Cột phải: Form thông tin */
+        .right-col { background: #1c1c1f; padding: 40px; border-radius: 12px; flex: 1; }
+        .form-section { margin-bottom: 35px; padding-bottom: 25px; border-bottom: 1px solid #333; }
+        .form-group { margin-bottom: 25px; }
+        .form-group label { display: block; margin-bottom: 10px; color: #ccc; font-size: 15px; }
+        .form-group input { width: 100%; padding: 14px; background: #0f0f11; border: 1px solid #333; border-radius: 6px; color: white; box-sizing: border-box; font-size: 15px; }
+        .form-group input:focus { outline: none; border-color: #ffda76; }
+        
+        .btn-save { background: #ffda76; color: #111; border: none; padding: 15px 30px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; float: right; transition: 0.3s;}
+        .btn-save:hover { background: #ffcc00; }
+
+        /* Popup Cắt Ảnh: Sửa thành màu nền #0f0f11 đặc 100%, bỏ rgba trong suốt */
+        .cropper-modal { display: none; position: fixed; inset: 0; background: #0f0f11; z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
+        .cropper-container-box { width: 90%; max-width: 600px; height: 400px; background: #000; border: 1px solid #333; border-radius: 8px; overflow: hidden; }
+        .cropper-actions { margin-top: 20px; display: flex; gap: 15px; }
+        .cropper-actions button { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 15px; }
+        .btn-cancel { background: #444; color: white; }
+        .btn-crop { background: #ffda76; color: black; }
+    </style>
+</head>
+<body>
+    <header class="navbar" style="background-color: rgba(15, 15, 17, 0.9);">
+        <div class="logo"><h2 onclick="window.location.href='index.html'" style="cursor: pointer;">🎬 DLUAPHIM</h2></div>
+        <a href="index.html" style="color: #fff; text-decoration: none;">⬅ Quay lại Trang chủ</a>
+    </header>
+
+    <div class="profile-wrapper">
+        <!-- Cột Ảnh Đại Diện -->
+        <div class="left-col">
+            <h3 style="margin-top: 0; color: #ccc; font-size: 16px; margin-bottom: 20px;">Ảnh Đại Diện</h3>
+            <img id="preview-img" src="https://i.pravatar.cc/150?img=11" class="avatar-preview">
+            <!-- Tên hiển thị -->
+            <p id="display-username"></p>
+            
+            <input type="file" id="file-input" accept="image/*" style="display: none;">
+            <label for="file-input" class="upload-btn">📷 Tải ảnh lên</label>
+        </div>
+
+        <!-- Cột Thông tin cá nhân -->
+        <div class="right-col">
+            <h2 style="margin-top: 0; color: #ffda76;">Thông Tin Tài Khoản</h2>
+            
+            <div class="form-section">
+                <h3>1. Thông tin cá nhân</h3>
+                <div class="form-group">
+                    <label>Họ và Tên hiển thị</label>
+                    <!-- Bắt sự kiện gõ phím để đồng bộ tên ngay lập tức -->
+                    <input type="text" id="full-name" placeholder="Ví dụ: Nguyễn Văn A" oninput="syncName()">
+                </div>
+                <div class="form-group">
+                    <label>Số điện thoại</label>
+                    <input type="text" id="phone" placeholder="Nhập số điện thoại...">
+                </div>
+                <div class="form-group">
+                    <label>Địa chỉ</label>
+                    <input type="text" id="address" placeholder="Nhập địa chỉ của bạn...">
+                </div>
+            </div>
+
+            <div class="form-section" style="border: none;">
+                <h3>2. Bảo mật</h3>
+                <div class="form-group">
+                    <label>Mật khẩu mới (Bỏ trống nếu không đổi)</label>
+                    <input type="password" id="new-pwd" placeholder="Nhập mật khẩu mới...">
+                </div>
+                <div class="form-group">
+                    <label>Xác nhận Mật khẩu mới</label>
+                    <input type="password" id="confirm-pwd" placeholder="Nhập lại mật khẩu mới...">
+                </div>
+            </div>
+
+            <button class="btn-save" onclick="saveProfile()">Lưu Thông Tin</button>
+        </div>
+    </div>
+
+    <!-- Popup Cắt Ảnh -->
+    <div class="cropper-modal" id="cropper-modal">
+        <h3 style="color: white; margin-bottom: 15px;">Căn chỉnh ảnh đại diện (Lăn chuột để phóng to/thu nhỏ)</h3>
+        <div class="cropper-container-box">
+            <img id="image-to-crop" src="">
+        </div>
+        <div class="cropper-actions">
+            <button class="btn-cancel" onclick="closeCropper()">Hủy bỏ</button>
+            <button class="btn-crop" onclick="applyCrop()">✂️ Cắt và Áp dụng</button>
+        </div>
+    </div>
+
+    <script>
+        const username = localStorage.getItem('username');
+        if (!username) window.location.href = 'index.html';
+
+        let cropper;
+        let finalAvatarBase64 = null;
+
+        // Đồng bộ chữ gõ vào ô "Họ và Tên" sang chữ dưới Avatar ngay lập tức
+        function syncName() {
+            const typedName = document.getElementById('full-name').value;
+            document.getElementById('display-username').innerText = typedName || username;
+        }
+
+        async function loadProfile() {
+            try {
+                const res = await fetch(`https://dluaphim-api.onrender.com/api/users/${username}`);
+                const data = await res.json();
+                
+                if (data.avatar) document.getElementById('preview-img').src = data.avatar;
+                if (data.phone) document.getElementById('phone').value = data.phone;
+                if (data.address) document.getElementById('address').value = data.address;
+                
+                // Nạp Tên hiển thị, nếu chưa có thì lấy username
+                if (data.fullName) {
+                    document.getElementById('full-name').value = data.fullName;
+                    document.getElementById('display-username').innerText = data.fullName;
+                } else {
+                    document.getElementById('display-username').innerText = username;
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        document.getElementById('file-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.getElementById('image-to-crop').src = event.target.result;
+                    document.getElementById('cropper-modal').style.display = 'flex';
+                    
+                    if(cropper) cropper.destroy(); 
+                    
+                    cropper = new Cropper(document.getElementById('image-to-crop'), {
+                        aspectRatio: 1, 
+                        viewMode: 1,
+                        background: false
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function closeCropper() {
+            document.getElementById('cropper-modal').style.display = 'none';
+            document.getElementById('file-input').value = ''; 
+        }
+
+        function applyCrop() {
+            if (!cropper) return;
+            const canvas = cropper.getCroppedCanvas({ width: 300, height: 300 });
+            finalAvatarBase64 = canvas.toDataURL('image/jpeg', 0.8);
+            
+            document.getElementById('preview-img').src = finalAvatarBase64;
+            closeCropper();
+        }
+
+        async function saveProfile() {
+            const fullName = document.getElementById('full-name').value;
+            const phone = document.getElementById('phone').value;
+            const address = document.getElementById('address').value;
+            const newPassword = document.getElementById('new-pwd').value;
+            const confirmPassword = document.getElementById('confirm-pwd').value;
+
+            if (newPassword !== '' && newPassword !== confirmPassword) {
+                alert('Mật khẩu xác nhận không khớp! Vui lòng nhập lại.');
+                return;
+            }
+
+            const bodyData = { fullName, phone, address };
+            if (finalAvatarBase64) bodyData.avatar = finalAvatarBase64; 
+            if (newPassword) bodyData.newPassword = newPassword;
+
+            try {
+                const res = await fetch(`https://dluaphim-api.onrender.com/api/users/${username}/profile`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bodyData)
+                });
+                const data = await res.json();
+                alert(data.message);
+                
+                // Cập nhật xong thì load lại web để đảm bảo an toàn dữ liệu
+                window.location.reload();
+            } catch (err) { alert('Có lỗi xảy ra khi lưu!'); }
+        }
+
+        loadProfile();
+    </script>
+</body>
+</html>

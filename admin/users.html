@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Thành Viên - Admin</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        <aside class="sidebar">
+            <h2>⚙️ DLUAPHIM Admin</h2>
+            <ul>
+                <li><a href="index.html">🎬 Quản lý phim</a></li>
+                <li class="active"><a href="users.html">👥 Quản lý thành viên</a></li>
+                <li><a href="../user/index.html">🌐 Về trang web</a></li>
+            </ul>
+        </aside>
+
+        <main class="content">
+            <div class="header">
+                <h1>Danh sách thành viên</h1>
+            </div>
+
+            <table class="movie-table">
+                <thead>
+                    <tr>
+                        <th>Tên đăng nhập</th>
+                        <th>Mật khẩu</th>
+                        <th>Phân quyền</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-user-list">
+                    </tbody>
+            </table>
+        </main>
+    </div>
+
+    <script src="users.js"></script>
+</body>
+</html>

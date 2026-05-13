@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng ký - DLUAPHIM</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* CSS riêng cho form để nó nằm giữa màn hình */
+        .auth-container {
+            max-width: 400px;
+            margin: 100px auto;
+            background: #1c1c1f;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        }
+        .auth-container h2 { text-align: center; margin-bottom: 20px; color: #ffcc00; }
+        .auth-container input {
+            width: 100%; padding: 12px; margin-bottom: 15px;
+            background: #2a2a2f; border: none; color: white; border-radius: 5px;
+        }
+        .auth-container button {
+            width: 100%; padding: 12px; background: #ffcc00; border: none;
+            color: black; font-weight: bold; cursor: pointer; border-radius: 5px;
+        }
+        .auth-container p { text-align: center; margin-top: 15px; font-size: 14px; }
+        .auth-container a { color: #ffcc00; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <h2>Đăng Ký</h2>
+        <input type="text" id="reg-username" placeholder="Tên đăng nhập">
+        <input type="password" id="reg-password" placeholder="Mật khẩu">
+        <button onclick="register()">Đăng Ký</button>
+        <p>Đã có tài khoản? <a href="login.html">Đăng nhập ngay</a></p>
+    </div>
+
+    <script>
+        async function register() {
+            const username = document.getElementById('reg-username').value;
+            const password = document.getElementById('reg-password').value;
+
+            const res = await fetch('https://dluaphim-api.onrender.com/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+            alert(data.message);
+            if (res.ok) window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

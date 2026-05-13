@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Phim - Admin</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        <aside class="sidebar">
+            <h2>⚙️ DLUAPHIM Admin</h2>
+            <ul>
+                <li class="active"><a href="#">🎬 Quản lý phim</a></li>
+                <li><a href="users.html">👥 Quản lý thành viên</a></li>
+                <li><a href="../user/index.html">🌐 Về trang web</a></li>
+            </ul>
+        </aside>
+
+        <main class="content">
+            <div class="header">
+                <h1>Danh sách phim</h1>
+                <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                <!-- Ô chọn thể loại -->
+                <select id="leech-genre-select" style="padding: 10px; background: #2a2a2f; color: white; border: 1px solid #444; border-radius: 5px; cursor: pointer; font-size: 15px;">
+                    <option value="hanh-dong">💥 Hành Động</option>
+                    <option value="kinh-di">👻 Kinh Dị</option>
+                    <option value="tinh-cam">❤️ Tình Cảm</option>
+                    <option value="hoat-hinh">🦄 Hoạt Hình</option>
+                    <option value="vien-tuong">🚀 Viễn Tưởng</option>
+                    <option value="co-trang">🎎 Cổ Trang</option>
+                    <option value="hai-huoc">😂 Hài Hước</option>
+                </select>
+                    <button class="btn-action" id="btn-leech-genre" style="background-color: #ffda76; color: black; font-weight: bold;">⚡ Đào 5 Phim Ngẫu Nhiên</button>
+                </div>
+                <div>
+                    
+                    <!-- Nút cũ -->
+                    <button id="btn-leech-movie" style="background: #17a2b8; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 10px; font-weight: bold;">⚡ Auto Cào 5 Phim Mới</button>
+                    
+                    <!-- NÚT MỚI THÊM: Cào theo tên -->
+                    <button id="btn-leech-search" style="background: #e83e8c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 10px; font-weight: bold;">🔍 Cào Phim Theo Tên</button>
+                    
+                    <!-- Nút cũ -->
+                    <button class="btn-add" onclick="openModal()">+ Thêm phim mới</button>
+                </div>
+                <div style="margin: 20px 0; padding: 20px; background: #1c1c1f; border-radius: 8px; border: 1px solid #444;">
+                    <h3 style="color: #ffda76; margin-top: 0;">🔄 Đồng bộ dữ liệu KKPhim</h3>
+                    <p style="color: #ccc; font-size: 14px;">Chức năng này sẽ quét toàn bộ phim hiện có, tự động lấy mô tả và các tập phim mới nhất về web.</p>
+    
+                    <button id="btn-sync" onclick="syncAllMovies()" style="background: #00d2ff; color: black; padding: 10px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.3s;">
+                        ▶ Bắt đầu đồng bộ tất cả
+                    </button>
+                    <span id="sync-status" style="margin-left: 15px; color: #ffda76; font-style: italic;"></span>
+                </div>
+            </div>
+
+            <table class="movie-table">
+                <thead>
+                    <tr>
+                        <th>Ảnh bìa</th>
+                        <th>Tên phim</th>
+                        <th>Trạng thái</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-movie-list">
+                    
+                    <tr>
+                        <td><img src="https://image.tmdb.org/t/p/w500/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg" alt="Phim" width="60"></td>
+                        <td>Tên Phim Demo 1</td>
+                        <td><span class="status-badge active">Đang chiếu</span></td>
+                        <td>
+                            <button class="btn-edit">Sửa</button>
+                            <button class="btn-delete">Xóa</button>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td><img src="https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg" alt="Phim" width="60"></td>
+                        <td>Tên Phim Demo 2</td>
+                        <td><span class="status-badge pending">Sắp chiếu</span></td>
+                        <td>
+                            <button class="btn-edit">Sửa</button>
+                            <button class="btn-delete">Xóa</button>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </main>
+    </div>
+    <div id="movieModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <h2 id="modal-title">Thêm phim mới</h2>
+            
+            <label>Tên phim</label>
+            <input type="text" id="add-title" placeholder="Nhập tên phim...">
+            
+            <label>Link ảnh bìa</label>
+            <input type="text" id="add-thumbnail" placeholder="Dán link ảnh bìa...">
+
+            <label>Link Video (.mp4 hoặc link trực tiếp)</label>
+            <label>Link các tập phim (Mỗi link dán 1 dòng, Enter xuống dòng)</label>
+            <textarea id="add-episodes" rows="4" placeholder="Ví dụ:&#10;Link tập 1...&#10;Link tập 2..." style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #ccc;"></textarea>
+            
+            <label>Trạng thái</label>
+            <select id="add-status">
+                <option value="Đang chiếu">Đang chiếu</option>
+                <option value="Sắp chiếu">Sắp chiếu</option>
+            </select>
+            <label>Kiểu phim</label>
+            <select id="add-type" style="width: 100%; padding: 10px; margin-bottom: 15px; background: #2a2a2f; color: white; border: none; border-radius: 5px;">
+                <option value="single">Phim Lẻ</option>
+                <option value="series">Phim Bộ</option>
+            </select>
+
+            <label>Thể loại (Mỗi thể loại cách nhau 1 dấu phẩy)</label>
+            <input type="text" id="add-genres" placeholder="VD: Hành Động, Viễn Tưởng, Hài Hước">
+            <button id="btn-save-movie" class="btn-add" style="width: 100%; margin-top: 15px;">Lưu Phim</button>
+        </div>
+    </div>
+    <script src="admin.js"></script>
+</body>
+</html>

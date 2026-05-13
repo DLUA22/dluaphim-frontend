@@ -1,0 +1,184 @@
+/* Reset CSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+/* Nền sáng cho admin dễ nhìn */
+body {
+    background-color: #f4f6f9;
+    color: #333;
+}
+
+/* Chia bố cục: Menu trái và Nội dung phải */
+.admin-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* 1. MENU BÊN TRÁI */
+.sidebar {
+    width: 250px;
+    background-color: #343a40; /* Màu xám đen */
+    color: white;
+    padding: 20px;
+}
+
+.sidebar h2 {
+    font-size: 20px;
+    margin-bottom: 30px;
+    text-align: center;
+    color: #ffcc00;
+}
+
+.sidebar ul {
+    list-style: none;
+}
+
+.sidebar ul li {
+    margin-bottom: 15px;
+}
+
+.sidebar ul li a {
+    color: #c2c7d0;
+    text-decoration: none;
+    display: block;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.sidebar ul li.active a, .sidebar ul li a:hover {
+    background-color: #494e53;
+    color: white;
+}
+
+/* 2. NỘI DUNG BÊN PHẢI */
+.content {
+    flex: 1; /* Chiếm hết phần không gian còn lại */
+    padding: 30px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.btn-add {
+    background-color: #28a745; /* Màu xanh lá */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.btn-add:hover {
+    background-color: #218838;
+}
+
+/* 3. BẢNG HIỂN THỊ PHIM */
+.movie-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.movie-table th, .movie-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    vertical-align: middle;
+}
+
+.movie-table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+.movie-table img {
+    border-radius: 5px;
+}
+
+/* Nhãn trạng thái */
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    color: white;
+}
+
+.status-badge.active { background-color: #28a745; }
+.status-badge.pending { background-color: #ffc107; color: #333; }
+
+/* Nút Sửa / Xóa */
+.btn-edit, .btn-delete {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 5px;
+    font-weight: bold;
+}
+
+.btn-edit { background-color: #007bff; color: white; }
+.btn-edit:hover { background-color: #0056b3; }
+
+.btn-delete { background-color: #dc3545; color: white; }
+.btn-delete:hover { background-color: #c82333; }
+/* --- CODE CHO POPUP (MODAL) --- */
+.modal {
+    display: none; /* Mặc định ẩn đi, khi nào gọi mới hiện */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.6); /* Nền đen mờ */
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 5% auto; /* Canh giữa màn hình */
+    padding: 25px;
+    border-radius: 8px;
+    width: 400px;
+    position: relative;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.modal-content h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.modal-content input, .modal-content select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #aaa;
+    cursor: pointer;
+}
+
+.close-btn:hover {
+    color: red;
+}
