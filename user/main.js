@@ -462,3 +462,4 @@ window.clearAllNoti = async function(event) {
     } catch(e) {}
 }
 document.getElementById('chat-window').style.display = 'none';
+fetchMovies();
