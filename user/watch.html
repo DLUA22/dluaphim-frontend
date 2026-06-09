@@ -62,6 +62,8 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const slug = urlParams.get("slug");
+        const serverIndex = parseInt(urlParams.get('server')) || 0; 
+        const tapSlug = urlParams.get('tap');
         let globalMovieData = null; 
 
         if (!slug) window.location.href = 'index.html';
