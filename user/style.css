@@ -711,3 +711,34 @@ body {
         font-size: 16px !important; /* Ép 16px để iPhone không bị zoom cận mặt khi bấm gõ phím */
     }
 }
+#episode-list {
+    display: flex !important;
+    flex-wrap: wrap !important; /* Tự động xuống dòng khi hết chỗ */
+    gap: 8px !important;
+    padding: 10px 0 !important;
+    width: 100% !important;
+}
+
+.episode-btn {
+    flex: 0 0 auto !important; /* Không cho nút bị co giãn */
+    min-width: 45px;
+    padding: 8px 12px !important;
+    text-align: center;
+    background: #333 !important;
+    color: #fff !important;
+    border-radius: 4px !important;
+    cursor: pointer;
+    font-size: 13px !important;
+    transition: 0.2s;
+}
+
+.episode-btn:hover {
+    background: #ffda76 !important;
+    color: #000 !important;
+}
+
+.episode-btn.active {
+    background: #ffda76 !important;
+    color: #000 !important;
+    font-weight: bold;
+}
