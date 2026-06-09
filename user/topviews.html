@@ -20,8 +20,6 @@
         .top-header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid #333; padding-bottom: 20px;}
         .top-header h1 { color: #ffda76; margin: 0 0 10px 0; font-size: 32px;}
         .top-header p { color: #888; margin: 0; }
-
-        /* Khung từng bộ phim xếp dọc */
         .top-item { 
             display: flex; 
             align-items: center; 
@@ -33,35 +31,27 @@
         }
         .top-item:hover { 
             background: #2a2a2f; 
-            transform: translateX(10px); /* Hiệu ứng thụt lùi khi lia chuột */
+            transform: translateX(10px);
         }
-        
-        /* Cột Thứ hạng */
         .top-rank { font-size: 35px; font-weight: bold; color: #555; width: 70px; text-align: center; font-style: italic;}
         .rank-1 { color: #ffd700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); } /* Vàng */
         .rank-2 { color: #c0c0c0; } /* Bạc */
         .rank-3 { color: #cd7f32; } /* Đồng */
-
-        /* Ảnh và thông tin */
         .top-thumb { width: 80px; height: 110px; object-fit: cover; border-radius: 6px; margin-right: 20px; }
         .top-info { flex: 1; }
         .top-title { font-size: 20px; font-weight: bold; color: #fff; margin-bottom: 8px; }
         .top-views { color: #ffda76; font-size: 16px; background: rgba(255, 218, 118, 0.1); display: inline-block; padding: 5px 12px; border-radius: 20px;}
-        
-        /* Nút Play bên phải */
         .btn-play-mini { background: #ffda76; color: black; border: none; padding: 8px 15px; border-radius: 4px; font-weight: bold; pointer-events: none;}
     </style>
 </head>
 <body>
     <div id="header-placeholder"></div>
-
     <div class="top-container">
         <div class="top-header">
             <h1>🔥 Top 10 Phim Thịnh Hành</h1>
             <p>Bảng xếp hạng những bộ phim có tổng lượt xem cao nhất hệ thống</p>
         </div>
 
-        <!-- JS sẽ đổ danh sách 10 phim vào đây -->
         <div id="top-list">
             <h3 style="color:#888; text-align:center; padding: 40px;">Đang tải dữ liệu...</h3>
         </div>
@@ -70,24 +60,18 @@
     <script>
         async function loadTopMovies() {
             try {
-                // Gọi API lấy 10 phim
                 const res = await fetch('https://dluaphim-api.onrender.com/api/movies/top-10');
-                const movies = await res.json();
-                
+                const movies = await res.json();              
                 const listDiv = document.getElementById('top-list');
                 listDiv.innerHTML = '';
-
                 movies.forEach((movie, index) => {
                     const rank = index + 1;
-                    
-                    // Tô màu 3 top đầu
                     let rankClass = '';
                     if(rank === 1) rankClass = 'rank-1';
                     else if(rank === 2) rankClass = 'rank-2';
                     else if(rank === 3) rankClass = 'rank-3';
-
                     listDiv.innerHTML += `
-                        <div class="top-item" onclick="window.location.href='watch.html?id=${movie._id}'">
+                        <div class="top-item" onclick="window.location.href='detail.html?slug=${movie.slug}'">
                             <div class="top-rank ${rankClass}">#${rank}</div>
                             <img class="top-thumb" src="${movie.thumbnail}" alt="${movie.title}">
                             
@@ -105,8 +89,6 @@
                 document.getElementById('top-list').innerHTML = '<h3 style="color:red; text-align:center;">Có lỗi xảy ra, không thể tải dữ liệu!</h3>';
             }
         }
-
-        // Chạy hàm khi vừa mở trang
         loadTopMovies();
     </script>
     <script src="loadHeader.js"></script>

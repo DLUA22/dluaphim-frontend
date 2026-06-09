@@ -1,6 +1,3 @@
-// =========================================================================
-// FILE: loadHeader.js (QUẢN LÝ GIAO DIỆN HEADER CHO TOÀN BỘ TRANG WEB)
-// =========================================================================
 
 document.addEventListener("DOMContentLoaded", function() {
     // 1. Tải giao diện Header
@@ -11,15 +8,11 @@ document.addEventListener("DOMContentLoaded", function() {
             if (placeholder) {
                 placeholder.innerHTML = data;
             }
-
-            // 2. Kích hoạt Avatar & Chuông thông báo ngay lập tức
             checkLogin();
-
             const searchInput = document.querySelector('.search-bar input');
             const searchBarContainer = document.querySelector('.search-bar');
 
             if (searchInput && searchBarContainer) {
-                // 1. Tạo một cái khung ẩn để chứa danh sách phim xổ xuống
                 searchBarContainer.style.position = 'relative';
                 const suggestionBox = document.createElement('div');
                 suggestionBox.id = 'search-suggestions';
@@ -27,26 +20,21 @@ document.addEventListener("DOMContentLoaded", function() {
                 searchBarContainer.appendChild(suggestionBox);
 
                 let searchTimeout = null;
-                let globalSearchMovies = []; // Biến lưu tạm danh sách phim
+                let globalSearchMovies = [];
 
                 searchInput.addEventListener('input', async (event) => {
                     const searchTerm = event.target.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
                     
                     if (!searchTerm) {
                         suggestionBox.style.display = 'none';
-                        // Nếu xóa trắng ô tìm kiếm mà đang ở trang chủ, thì hiển thị lại toàn bộ phim
                         if (typeof allMovies !== 'undefined' && typeof renderMovies === 'function') renderMovies(allMovies);
                         return;
                     }
-
-                    // 2. Kỹ thuật Debounce (Chờ 300ms sau khi ngừng gõ mới tìm)
                     clearTimeout(searchTimeout);
                     searchTimeout = setTimeout(async () => {
-                        
-                        // Nếu chưa có data thì tự động đi lấy (Hỗ trợ khi đang đứng ở trang Watch, Detail...)
                         if (globalSearchMovies.length === 0) {
                             if (typeof allMovies !== 'undefined' && allMovies.length > 0) {
-                                globalSearchMovies = allMovies; // Mượn data trang chủ nếu có
+                                globalSearchMovies = allMovies; 
                             } else {
                                 try {
                                     const res = await fetch('https://dluaphim-api.onrender.com/api/movies');
@@ -54,14 +42,10 @@ document.addEventListener("DOMContentLoaded", function() {
                                 } catch(e) { console.error("Lỗi lấy dữ liệu tìm kiếm"); }
                             }
                         }
-
-                        // 3. Lọc phim không dấu
                         const results = globalSearchMovies.filter(movie => {
                             const normalizedTitle = movie.title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
                             return normalizedTitle.includes(searchTerm);
                         });
-
-                        // 4. Vẽ giao diện Dropdown tuyệt đẹp
                         if (results.length > 0) {
                             const top5Results = results.slice(0, 6); // Chỉ lấy 6 phim đầu tiên cho nhẹ menu
                             
@@ -159,7 +143,7 @@ async function checkLogin() {
                         const date = new Date(noti.createdAt).toLocaleString('vi-VN');
                         notiHtml += `
                             <div style="position: relative; border-bottom: 1px solid #444;">
-                                <a href="watch.html?slug=${noti.movieId}#comment-${noti._id}" style="display: block; padding: 10px 30px 10px 10px; text-decoration: none; color: white;">
+                                <a href="detail.html?slug=${noti.movieSlug || noti.movieId}#comment-${noti._id}" style="display: block; padding: 10px 30px 10px 10px; text-decoration: none; color: white;">
                                     <div style="font-size: 13px; color: #ffda76;">💬 <strong>${noti.fullName || noti.username}</strong> đã trả lời bạn</div>
                                     <div style="font-size: 12px; color: #ccc; margin-top: 3px;">"${noti.content.substring(0, 30)}..."</div>
                                     <div style="font-size: 10px; color: #888; margin-top: 5px;">🕒 ${date}</div>
