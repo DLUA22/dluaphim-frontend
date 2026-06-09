@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             return normalizedTitle.includes(searchTerm);
                         });
                         if (results.length > 0) {
-                            const top5Results = results.slice(0, 6); // Chỉ lấy 6 phim đầu tiên cho nhẹ menu
+                            const top5Results = results.slice(0, 5);
                             
                             suggestionBox.innerHTML = top5Results.map(m => `
                                 <a href="detail.html?slug=${m.slug}" style="display: flex; align-items: center; gap: 15px; padding: 12px 15px; border-bottom: 1px solid #333; text-decoration: none; color: white; transition: 0.2s;" onmouseover="this.style.background='#2a2a2f'" onmouseout="this.style.background='transparent'">
