@@ -711,25 +711,38 @@ body {
         font-size: 16px !important; /* Ép 16px để iPhone không bị zoom cận mặt khi bấm gõ phím */
     }
 }
+/* Container chứa các nút tập phim */
 #episode-grid {
-    display: flex;        /* Bật chế độ dàn hàng ngang */
-    flex-wrap: wrap;      /* Cho phép xuống dòng nếu hết chỗ */
-    gap: 10px;            /* Khoảng cách giữa các nút */
+    display: flex;
+    flex-wrap: wrap;      /* Cực kỳ quan trọng: Cho phép xuống dòng */
+    gap: 8px;             /* Khoảng cách giữa các nút */
+    width: 100%;          /* Ép khung chiếm hết chiều ngang thẻ cha */
     padding: 10px 0;
+    justify-content: flex-start; /* Dàn từ trái sang */
 }
 
+/* Các nút tập phim */
 .episode-btn {
-    min-width: 60px;      /* Đảm bảo nút không bị bóp méo */
-    padding: 8px 12px;
+    flex: 0 0 calc(10% - 8px); /* Chia đều 10 nút trên một hàng (tùy chỉnh số 10%) */
+    min-width: 50px;       /* Chiều rộng tối thiểu để nút không bị méo */
+    padding: 8px 4px;
     border: 1px solid #444;
     background: #2a2a2f;
     color: white;
     border-radius: 4px;
     cursor: pointer;
+    text-align: center;
     transition: 0.3s;
+    font-size: 13px;
 }
 
 .episode-btn:hover {
     background: #ffda76;
     color: black;
+}
+
+.episode-btn.active {
+    background: #ffda76;
+    color: black;
+    font-weight: bold;
 }
