@@ -114,7 +114,7 @@
                     if (episodes && episodes.length > 0) {
                         renderServerButtons(episodes);
                         const currentServerData = episodes[serverIndex].server_data;
-                        renderEpisodeButtons(currentServerData);
+                        renderEpisodeButtons(currentServerData, slug, serverIndex);
 
                         let videoUrl = '';
                         if (tapSlug) {

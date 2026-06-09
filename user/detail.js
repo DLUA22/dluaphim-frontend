@@ -30,7 +30,7 @@ async function loadMovieDetail() {
             const episodes = data.episodes; 
             if (episodes && episodes.length > 0) {
                 renderServers(episodes, slug);
-                renderEpisodes(episodes[0].server_data, slug, 0); 
+                renderEpisodeButtons(episodes[0].server_data, slug, 0);
             }
 
             document.getElementById("btn-play-now").addEventListener("click", () => {
@@ -62,7 +62,7 @@ window.changeServer = function(serverIndex, movieSlug) {
 
     if(globalMovieData) {
         const selectedServerData = globalMovieData.episodes[serverIndex].server_data;
-        renderEpisodes(selectedServerData, movieSlug, serverIndex);
+        renderEpisodeButtons(selectedServerData, movieSlug, serverIndex);
     }
 }
 
