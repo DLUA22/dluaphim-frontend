@@ -80,14 +80,24 @@
                     const movie = data.movie;
                     globalMovieData = data; 
 
-                    document.getElementById("d-poster").src = movie.thumb_url;
-                    document.getElementById("movie-title").innerText = movie.name;
-                    document.getElementById("movie-desc").innerHTML = movie.content || 'Chưa có thông tin.';
-                    document.getElementById("movie-status").innerText = movie.episode_current;
+                    // 👇 ĐÃ SỬA LẠI ĐÚNG ID CỦA TRANG WATCH 👇
+                    const thumbEl = document.getElementById("detail-thumb");
+                    if (thumbEl) thumbEl.src = movie.thumb_url;
+                    
+                    const titleEl = document.getElementById("movie-title");
+                    if (titleEl) titleEl.innerText = movie.name;
+                    
+                    const descEl = document.getElementById("movie-desc");
+                    if (descEl) descEl.innerHTML = movie.content || 'Chưa có thông tin.';
+                    
+                    const statusEl = document.getElementById("movie-status");
+                    if (statusEl) statusEl.innerText = movie.episode_current;
+                    
                     document.title = `Đang xem: ${movie.name} - DLUAPHIM`;
 
                     renderActors(movie.actor);
 
+                    // Lưu lịch sử xem phim
                     const username = sessionStorage.getItem('username');
                     if (username) {
                         fetch('https://dluaphim-api.onrender.com/api/users/history', {
@@ -97,6 +107,7 @@
                         }).catch(()=>{});
                     }
 
+                    // Tải server và phát phim
                     const episodes = data.episodes; 
                     if (episodes && episodes.length > 0) {
                         renderServerButtons(episodes);
@@ -115,7 +126,7 @@
                         document.getElementById('player-container').innerHTML = '<h3 style="color:white; text-align:center; padding-top: 200px;">Phim chưa có nguồn phát...</h3>';
                     }
                 }
-            } catch (error) { console.error("Lỗi:", error); }
+            } catch (error) { console.error("Lỗi tải phim:", error); }
         }
 
         function renderServerButtons(episodesArray) {

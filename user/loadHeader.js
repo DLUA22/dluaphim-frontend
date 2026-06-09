@@ -111,7 +111,7 @@ async function checkLogin() {
                     <span style="font-size: 24px;">🔔</span>
                     ${unreadCount > 0 ? `<span style="position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 11px; font-weight: bold; border: 2px solid #1c1c1f;">${unreadCount}</span>` : ''}
                     
-                    <div id="noti-menu" class="user-dropdown-menu" style="width: 280px; right: -20px; max-height: 350px; overflow-y: auto; background: #1c1c1f; border: 1px solid #444; box-shadow: 0 5px 15px rgba(0,0,0,0.8); z-index: 9999; display: none;">
+                    <div id="noti-menu" class="user-dropdown-menu" style="width: 280px; right: -20px; max-height: 350px; overflow-y: auto; background: #1c1c1f; border: 1px solid #444; box-shadow: 0 5px 15px rgba(0,0,0,0.8); z-index: 9999;">
                         <h4 style="margin: 0; padding: 12px; border-bottom: 1px solid #444; color: white; background: #2a2a2f;">Thông báo của bạn</h4>
                         ${notiHtml}
                     </div>
@@ -123,7 +123,7 @@ async function checkLogin() {
                         <span style="color: white; font-weight: bold; font-size: 14px;">${displayName} ▾</span>
                     </div>
                     
-                    <div id="user-menu-global" class="user-dropdown-menu" style="display: none; position: absolute; right: 0; background: #1c1c1f; padding: 10px; border-radius: 8px; z-index: 9999; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">
+                    <div id="user-menu-global" class="user-dropdown-menu" style="position: absolute; right: 0; background: #1c1c1f; padding: 10px; border-radius: 8px; z-index: 9999; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">
                         ${adminButton} 
                         <a href="profile.html" style="color: white; display: block; padding: 8px; text-decoration: none;">⚙️ Đổi thông tin & Avatar</a>
                         <a href="favorites.html" style="color: #ffda76; display: block; padding: 8px; text-decoration: none;">💖 Phim đã tim</a>
