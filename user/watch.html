@@ -61,28 +61,30 @@
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        const slug = urlParams.get('slug'); 
-        const serverIndex = parseInt(urlParams.get('server')) || 0; 
-        const tapSlug = urlParams.get('tap'); 
-        
+        const slug = urlParams.get("slug");
+        let globalMovieData = null; 
+
         if (!slug) window.location.href = 'index.html';
 
         fetch(`https://dluaphim-api.onrender.com/api/movies/${slug}/view`, { method: 'POST' }).catch(()=>{});
 
-        // 1. TẢI DỮ LIỆU PHIM TỪ KKPHIM & RENDER MULTI-SERVER
+        // ==========================================
+        // 1. TẢI CHI TIẾT PHIM (CÓ ĐA SERVER)
+        // ==========================================
         async function loadMovieDetail() {
             try {
                 const response = await fetch(`https://phimapi.com/phim/${slug}`);
                 const data = await response.json();
-
+                
                 if (data.status) {
                     const movie = data.movie;
+                    globalMovieData = data; 
 
+                    document.getElementById("d-poster").src = movie.thumb_url;
+                    document.getElementById("movie-title").innerText = movie.name;
+                    document.getElementById("movie-desc").innerHTML = movie.content || 'Chưa có thông tin.';
+                    document.getElementById("movie-status").innerText = movie.episode_current;
                     document.title = `Đang xem: ${movie.name} - DLUAPHIM`;
-                    document.getElementById('movie-title').innerText = movie.name;
-                    document.getElementById('movie-desc').innerHTML = movie.content || 'Chưa có thông tin.';
-                    document.getElementById('movie-status').innerText = movie.episode_current;
-                    document.getElementById('detail-thumb').src = movie.thumb_url;
 
                     renderActors(movie.actor);
 
@@ -95,17 +97,12 @@
                         }).catch(()=>{});
                     }
 
-                    // TÌM VÀ PHÁT ĐÚNG SERVER / TẬP PHIM
-                    const episodes = data.episodes;
+                    const episodes = data.episodes; 
                     if (episodes && episodes.length > 0) {
-                        // Vẽ Nút Server
                         renderServerButtons(episodes);
-
-                        // Vẽ Nút Tập Phim
                         const currentServerData = episodes[serverIndex].server_data;
                         renderEpisodeButtons(currentServerData);
 
-                        // Phát Phim
                         let videoUrl = '';
                         if (tapSlug) {
                             const selectedEp = currentServerData.find(ep => ep.slug === tapSlug);
@@ -118,18 +115,15 @@
                         document.getElementById('player-container').innerHTML = '<h3 style="color:white; text-align:center; padding-top: 200px;">Phim chưa có nguồn phát...</h3>';
                     }
                 }
-            } catch (error) { console.error('Lỗi tải phim:', error); }
+            } catch (error) { console.error("Lỗi:", error); }
         }
 
-        // HÀM MỚI: VẼ CÁC NÚT CHỌN SERVER
         function renderServerButtons(episodesArray) {
-            const serverListDiv = document.getElementById('server-list');
+            const serverListDiv = document.getElementById("server-list");
             serverListDiv.innerHTML = '';
-
             episodesArray.forEach((server, index) => {
                 const isActive = index === serverIndex; 
                 const btn = document.createElement('button');
-                
                 btn.style.padding = "8px 15px";
                 btn.style.background = isActive ? "rgba(255, 218, 118, 0.2)" : "transparent";
                 btn.style.color = isActive ? "#ffda76" : "#aaa";
@@ -137,15 +131,11 @@
                 btn.style.borderRadius = "5px";
                 btn.style.cursor = "pointer";
                 btn.style.fontWeight = isActive ? "bold" : "normal";
-
                 btn.innerText = `📺 ${server.server_name}`;
-                
-                // Chuyển Server
                 btn.onclick = () => {
                     const firstEpSlug = server.server_data[0].slug;
                     window.location.href = `watch.html?slug=${slug}&server=${index}&tap=${firstEpSlug}`;
                 };
-                
                 serverListDiv.appendChild(btn);
             });
         }
@@ -159,9 +149,9 @@
             }
             actorArray.forEach(actor => {
                 actorContainer.innerHTML += `
-                    <div class="actor-item" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; background: #252730; padding: 10px; border-radius: 8px;">
-                        <div class="actor-avatar" style="width: 40px; height: 40px; border-radius: 50%; background: #444; display: flex; justify-content: center; align-items: center; font-size: 20px;">🎭</div>
-                        <div class="actor-name" style="color: #fff; font-weight: bold; font-size: 14px;">${actor}</div>
+                    <div class="actor-item" style="display: flex; flex-direction: column; align-items: center; gap: 5px; width: 70px;">
+                        <div class="actor-avatar" style="width: 50px; height: 50px; border-radius: 50%; background: #444; display: flex; justify-content: center; align-items: center; font-size: 20px;">🎭</div>
+                        <div class="actor-name" style="color: #fff; font-weight: bold; font-size: 11px; text-align: center;">${actor}</div>
                     </div>
                 `;
             });
@@ -175,14 +165,13 @@
                 const btn = document.createElement('button');
                 btn.className = `episode-btn ${isActive}`;
                 btn.style.padding = "10px 15px";
-                btn.style.background = isActive ? "#ffda76" : "#333";
-                btn.style.color = isActive ? "#000" : "#fff";
+                btn.style.background = isActive === 'active' ? "#ffda76" : "#333";
+                btn.style.color = isActive === 'active' ? "#000" : "#fff";
                 btn.style.border = "none";
                 btn.style.borderRadius = "5px";
                 btn.style.cursor = "pointer";
-                btn.style.fontWeight = isActive ? "bold" : "normal";
+                btn.style.fontWeight = isActive === 'active' ? "bold" : "normal";
                 btn.innerText = ep.name;
-                
                 btn.onclick = () => {
                     window.location.href = `watch.html?slug=${slug}&server=${serverIndex}&tap=${ep.slug}`;
                 };
@@ -191,192 +180,80 @@
         }
 
         function playVideoM3U8(url) {
-            // 🚨 BƯỚC QUAN TRỌNG: DỌN RÁC LUỒNG PHIM CŨ TRƯỚC KHI BẬT PHIM MỚI
-            if (window.hls) {
-                window.hls.destroy(); // Giết luồng tải HLS cũ, chống lỗi Blob Not Found
-            }
-            if (window.player) {
-                window.player.destroy(); // Xóa bỏ giao diện Plyr cũ
-            }
+            if (window.hls) window.hls.destroy();
+            if (window.player) window.player.destroy();
 
             const playerContainer = document.getElementById('player-container');
-            // Xóa chữ "controls" trong thẻ video đi để nhường quyền cho Plyr
             playerContainer.innerHTML = `<video id="hls-video" width="100%" height="100%" crossorigin playsinline style="background: #000; outline: none;"></video>`;
             const video = document.getElementById('hls-video');
 
-            // Cấu hình giao diện và Việt Hóa cho Player
             const playerOptions = {
-                controls: [
-                    'play-large', 'rewind', 'play', 'fast-forward', 
-                    'progress', 'current-time', 'duration', 'mute', 
-                    'volume', 'settings', 'pip', 'airplay', 'fullscreen'
-                ],
+                controls: ['play-large', 'rewind', 'play', 'fast-forward', 'progress', 'current-time', 'duration', 'mute', 'volume', 'settings', 'pip', 'airplay', 'fullscreen'],
                 settings: ['quality', 'speed'], 
                 speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
-                i18n: {
-                    restart: 'Chơi lại', rewind: 'Lùi 10s', play: 'Phát', pause: 'Tạm dừng',
-                    fastForward: 'Tới 10s', seek: 'Tìm kiếm', played: 'Đã phát', buffered: 'Đã tải',
-                    currentTime: 'Thời gian hiện tại', duration: 'Thời lượng', volume: 'Âm lượng',
-                    mute: 'Tắt tiếng', unmute: 'Bật tiếng', settings: 'Cài đặt', speed: 'Tốc độ',
-                    normal: 'Bình thường', quality: 'Chất lượng', loop: 'Lặp lại',
-                    enterFullscreen: 'Toàn màn hình', exitFullscreen: 'Thoát toàn màn hình',
-                }
+                i18n: { speed: 'Tốc độ', quality: 'Chất lượng', normal: 'Bình thường' }
             };
 
             if (Hls.isSupported()) {
                 const hls = new Hls();
-                window.hls = hls; // Lưu biến hls ra ngoài để lần sau có cái mà dọn rác
-
+                window.hls = hls; 
                 hls.loadSource(url);
-
                 hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
-                    // Bắt các mức chất lượng từ KKPhim (1080p, 720p...) nhét vào bánh răng
                     const availableQualities = hls.levels.map((l) => l.height);
-                    availableQualities.unshift(0); // Số 0 tương đương với Auto
-
+                    availableQualities.unshift(0); 
                     playerOptions.quality = {
-                        default: 0,
-                        options: availableQualities,
-                        forced: true,
+                        default: 0, options: availableQualities, forced: true,
                         onChange: (e) => {
-                            if (e === 0) hls.currentLevel = -1; // Auto
+                            if (e === 0) hls.currentLevel = -1; 
                             else hls.levels.forEach((level, index) => { if (level.height === e) hls.currentLevel = index; });
                         },
                     };
-
-                    // Khởi tạo giao diện siêu xịn
-                    window.player = new Plyr(video, playerOptions); // Lưu biến player ra ngoài để dọn rác
-
-                    video.play().catch(() => console.log("Cần click để Play"));
+                    window.player = new Plyr(video, playerOptions); 
+                    video.play().catch(()=>{});
                 });
-
                 hls.attachMedia(video);
-                
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                // Dành riêng cho các máy dùng Safari (iPhone/Macbook)
                 video.src = url;
                 window.player = new Plyr(video, playerOptions);
                 video.addEventListener('loadedmetadata', function() { video.play(); });
             }
         }
-        // =========================================================
-        // COPY BỘ NÃO "SIÊU CẤP" TỪ DETAIL.JS SANG ĐÂY
-        // =========================================================
-        async function checkLoginState() {
-            const username = sessionStorage.getItem('username');
-            const userContainer = document.querySelector('.user-account');
+
+        // ==========================================
+        // 2. TẠO KHUNG BÌNH LUẬN (CHỈ VẼ KHUNG, KHÔNG DÍNH DÁNG ĐẾN HEADER)
+        // ==========================================
+        function renderCommentBox() {
             const commentFormArea = document.getElementById('comment-form-area');
-
-            if (username) {
-                let avatarSrc = "https://i.pravatar.cc/150?img=11";
-                let displayName = username; 
-                
-                try {
-                    const res = await fetch(`https://dluaphim-api.onrender.com/api/users/${username}`);
-                    const userData = await res.json();
-                    if (userData.avatar) avatarSrc = userData.avatar;
-                    if (userData.fullName) displayName = userData.fullName; 
-                } catch (e) {}
-
-                sessionStorage('displayName', displayName);
-                sessionStorage.setItem('userAvatar', avatarSrc);
-
-                let notiHtml = '';
-        let unreadCount = 0;
-        try {
-            const notiRes = await fetch(`https://dluaphim-api.onrender.com/api/movies/notifications/${username}`);
-            const notifications = await notiRes.json();
+            const username = sessionStorage.getItem('username');
             
-            if (Array.isArray(notifications)) {
-                unreadCount = notifications.length; 
+            if (username && commentFormArea) {
+                // Lấy thông tin có sẵn trong máy do loadHeader.js đã lưu
+                const avatarSrc = sessionStorage.getItem('userAvatar') || 'https://i.pravatar.cc/150?img=11';
+                const displayName = sessionStorage.getItem('displayName') || username; 
                 
-                if(unreadCount > 0) {
-                    notifications.forEach(noti => {
-                        const date = new Date(noti.createdAt).toLocaleString('vi-VN');
-                        // Thêm nút X ở góc phải mỗi thông báo
-                        notiHtml += `
-                            <div style="position: relative; border-bottom: 1px solid #444;">
-                                <a href="watch.html?slug=${noti.movieId}#comment-${noti._id}" style="display: block; padding: 10px 30px 10px 10px; text-decoration: none; color: white;">
-                                    <div style="font-size: 13px; color: #ffda76;">💬 <strong>${noti.fullName || noti.username}</strong> đã trả lời bạn</div>
-                                    <div style="font-size: 12px; color: #ccc; margin-top: 3px;">"${noti.content.substring(0, 30)}..."</div>
-                                    <div style="font-size: 10px; color: #888; margin-top: 5px;">🕒 ${date}</div>
-                                </a>
-                                <button onclick="deleteNoti('${noti._id}', event)" style="position: absolute; top: 10px; right: 5px; background: transparent; border: none; color: #888; font-size: 12px; cursor: pointer; padding: 5px;" title="Xóa thông báo">✖</button>
-                            </div>
-                        `;
-                    });
-                    
-                    // Thêm nút Xóa Tất Cả ở dưới cùng
-                    notiHtml += `
-                        <div style="text-align: center; padding: 10px; background: #2a2a2f;">
-                            <button onclick="clearAllNoti(event)" style="background: #ff4d4d; color: white; border: none; padding: 5px 15px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold;">🗑 Xóa tất cả</button>
+                commentFormArea.innerHTML = `
+                    <div style="display: flex; gap: 15px; align-items: flex-start;">
+                        <img src="${avatarSrc}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 1px solid #444;">
+                        <div style="flex: 1;">
+                            <textarea id="comment-input" placeholder="${displayName} ơi, bạn nghĩ sao về phim này?..." style="width: 100%; height: 60px; background: #1c1c1f; border: 1px solid #444; border-radius: 8px; padding: 12px; color: white; font-family: inherit; resize: none;"></textarea>
+                            <button onclick="submitComment()" style="background: #ffda76; color: black; padding: 8px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; float: right; margin-top: 10px;">Gửi Bình Luận</button>
                         </div>
-                    `;
-                } else {
-                    notiHtml = `<div style="padding: 10px; color: #888; text-align: center; font-size: 13px;">Không có thông báo mới</div>`;
-                }
-            }
-        } catch(e){}
-
-                if(userContainer) {
-                    userContainer.innerHTML = `
-                        <div style="display: flex; align-items: center; gap: 20px;">
-                            <div style="position: relative; cursor: pointer;" onclick="document.getElementById('noti-menu').classList.toggle('show')">
-                                <span style="font-size: 24px;">🔔</span>
-                                ${unreadCount > 0 ? `<span style="position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 11px; font-weight: bold; border: 2px solid #1c1c1f;">${unreadCount}</span>` : ''}
-                                <div id="noti-menu" class="user-dropdown-menu" style="width: 280px; right: -20px; max-height: 350px; overflow-y: auto; background: #1c1c1f; border: 1px solid #444; box-shadow: 0 5px 15px rgba(0,0,0,0.8); z-index: 9999;">
-                                    <h4 style="margin: 0; padding: 12px; border-bottom: 1px solid #444; color: white; background: #2a2a2f;">Thông báo của bạn</h4>
-                                    ${notiHtml}
-                                </div>
-                            </div>
-                            <div style="position: relative; display: inline-block;">
-                                <div class="avatar-btn" onclick="document.getElementById('user-menu').classList.toggle('show')" style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                                    <img src="${avatarSrc}" alt="Avatar" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid #ffda76;">
-                                    <span style="color: white; font-weight: bold; font-size: 14px;">${displayName} ▾</span>
-                                </div>
-                                <div id="user-menu" class="user-dropdown-menu">
-                                    <a href="profile.html">⚙️ Đổi thông tin</a>
-                                    <a href="#" onclick="sessionStorage.clear(); window.location.reload();" style="color: #ff4d4d;">👋 Đăng xuất</a>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
-
-                if(commentFormArea) {
-                    commentFormArea.innerHTML = `
-                        <div style="display: flex; gap: 15px; align-items: flex-start;">
-                            <img src="${avatarSrc}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 1px solid #444;">
-                            <div style="flex: 1;">
-                                <textarea id="comment-input" placeholder="${displayName} ơi, bạn nghĩ sao về phim này?..." style="width: 100%; height: 60px; background: #1c1c1f; border: 1px solid #444; border-radius: 8px; padding: 12px; color: white; font-family: inherit; resize: none;"></textarea>
-                                <button onclick="submitComment()" style="background: #ffda76; color: black; padding: 8px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; float: right; margin-top: 10px;">Gửi Bình Luận</button>
-                            </div>
-                        </div>
-                        <div style="clear: both;"></div>
-                    `;
-                }
-            } else {
-                if(commentFormArea) {
-                    commentFormArea.innerHTML = `<p style="color: #888; font-size: 14px;">Vui lòng <a href="login.html" style="color: #ffda76; font-weight: bold;">đăng nhập</a> để bình luận.</p>`;
-                }
+                    </div>
+                    <div style="clear: both;"></div>
+                `;
+            } else if(commentFormArea) {
+                commentFormArea.innerHTML = `<p style="color: #888; font-size: 14px;">Vui lòng <a href="login.html" style="color: #ffda76; font-weight: bold;">đăng nhập</a> để bình luận.</p>`;
             }
         }
 
-        window.submitComment = async function() {
-            sendCommentData(document.getElementById('comment-input').value, null, null);
-        };
-
-        window.submitReply = async function(parentId, replyToUsername) {
-            sendCommentData(document.getElementById(`reply-input-${parentId}`).value, parentId, replyToUsername);
-        };
+        window.submitComment = async function() { sendCommentData(document.getElementById('comment-input').value, null, null); };
+        window.submitReply = async function(parentId, replyToUsername) { sendCommentData(document.getElementById(`reply-input-${parentId}`).value, parentId, replyToUsername); };
 
         async function sendCommentData(content, parentId, replyToUsername) {
             const username = sessionStorage.getItem('username');
             const fullName = sessionStorage.getItem('displayName') || username; 
             const avatar = sessionStorage.getItem('userAvatar') || 'https://i.pravatar.cc/150?img=11';
-
             if (!content.trim()) return;
-
             try {
                 const res = await fetch(`https://dluaphim-api.onrender.com/api/movies/${slug}/comments`, {
                     method: 'POST',
@@ -391,7 +268,6 @@
             try {
                 const res = await fetch(`https://dluaphim-api.onrender.com/api/movies/${slug}/comments`);
                 const comments = await res.json();
-                
                 const listDiv = document.getElementById('comments-list');
                 if (!Array.isArray(comments)) return;
                 
@@ -403,22 +279,19 @@
 
                 const parents = comments.filter(c => !c.parentId);
                 const replies = comments.filter(c => c.parentId);
-
                 listDiv.innerHTML = '';
                 
                 parents.forEach(cmt => {
                     const date = new Date(cmt.createdAt).toLocaleString('vi-VN');
                     const displayCmtName = cmt.fullName || cmt.username; 
-                    
                     const childReplies = replies.filter(r => r.parentId === cmt._id);
                     let repliesHtml = '';
                     
                     childReplies.forEach(reply => {
                         const rDate = new Date(reply.createdAt).toLocaleString('vi-VN');
                         const displayRepName = reply.fullName || reply.username;
-                        
                         repliesHtml += `
-                            <div id="comment-${reply._id}" style="display: flex; gap: 10px; margin-top: 15px; margin-left: 50px; background: #1c1c1f; padding: 10px; border-radius: 8px; border-left: 2px solid #555; transition: 1s;">
+                            <div id="comment-${reply._id}" style="display: flex; gap: 10px; margin-top: 15px; margin-left: 50px; background: #1c1c1f; padding: 10px; border-radius: 8px; border-left: 2px solid #555;">
                                 <img src="${reply.avatar}" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover;">
                                 <div style="flex: 1;">
                                     <h4 style="margin: 0; color: #fff; font-size: 14px;">${displayRepName} <span style="color: #888; font-size: 11px; margin-left: 10px;">🕒 ${rDate}</span></h4>
@@ -432,7 +305,7 @@
 
                     listDiv.innerHTML += `
                         <div style="margin-bottom: 25px;">
-                            <div id="comment-${cmt._id}" style="display: flex; gap: 15px; background: #2a2a2f; padding: 15px; border-radius: 8px; border-left: 3px solid #ffda76; transition: 1s;">
+                            <div id="comment-${cmt._id}" style="display: flex; gap: 15px; background: #2a2a2f; padding: 15px; border-radius: 8px; border-left: 3px solid #ffda76;">
                                 <img src="${cmt.avatar}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 1px solid #444;">
                                 <div style="flex: 1;">
                                     <h4 style="margin: 0; color: #fff; font-size: 15px;">${displayCmtName} <span style="color: #888; font-size: 12px; font-weight: normal; margin-left: 10px;">🕒 ${date}</span></h4>
@@ -472,72 +345,26 @@
             document.getElementById(`reply-input-${parentId}`).focus();
         }
 
-        // KHỞI CHẠY LÚC LOAD TRANG
+        // =========================================================
+        // KHỞI CHẠY (CHỈ CHẠY CÁC HÀM CỦA PHIM)
+        // =========================================================
         document.addEventListener("DOMContentLoaded", () => {
-            if (slug) {
-                loadMovieDetail();
-                checkLoginState();
-                loadComments();
-            }
+            loadMovieDetail();
+            renderCommentBox(); // Tự vẽ khung bình luận
+            loadComments();
         });
 
-        window.addEventListener('click', function(event) {
-            if (!event.target.closest('.avatar-btn') && !event.target.closest('.user-dropdown-menu') && !event.target.closest('[onclick*="noti-menu"]')) {
-                document.querySelectorAll('.user-dropdown-menu').forEach(menu => menu.classList.remove('show'));
-            }
-        });
-        // ================= HÀM XÓA THÔNG BÁO TỪ MENU CHUÔNG =================
-        window.deleteNoti = async function(notiId, event) {
-            event.stopPropagation(); // Ngăn trình duyệt nhảy link sang trang phim
-            try {
-                await fetch(`https://dluaphim-api.onrender.com/api/movies/notifications/${notiId}/read`, { method: 'PUT' });
-                
-                // Gọi lại hàm để vẽ lại cái chuông
-                if(typeof checkLogin === 'function') await checkLogin();
-                if(typeof checkLoginState === 'function') await checkLoginState();
-                
-                // Mở lại menu chuông cho đỡ bị tắt đột ngột
-                document.getElementById('noti-menu').classList.add('show');
-            } catch(e) {}
-        }
-
-        window.clearAllNoti = async function(event) {
-            event.stopPropagation();
-            const username = sessionStorage.getItem('username');
-            if(!username) return;
-            try {
-                await fetch(`https://dluaphim-api.onrender.com/api/movies/notifications/clear-all/${username}`, { method: 'PUT' });
-                
-                if(typeof checkLogin === 'function') await checkLogin();
-                if(typeof checkLoginState === 'function') await checkLoginState();
-                
-                document.getElementById('noti-menu').classList.add('show');
-            } catch(e) {}
-        }
-        // =========================================================
-        // CẢM BIẾN XOAY MÀN HÌNH TỰ ĐỘNG FULLSCREEN (ĐÃ FIX LỖI)
-        // =========================================================
+        // CẢM BIẾN XOAY MÀN HÌNH TỰ ĐỘNG FULLSCREEN
         window.addEventListener("orientationchange", function() {
-            // Đợi 0.3 giây để điện thoại hoàn tất hiệu ứng xoay
             setTimeout(() => {
-                let angle = (window.screen && window.screen.orientation) 
-                            ? window.screen.orientation.angle 
-                            : window.orientation;
-                
-                // Nếu xoay ngang (90, -90, 270 độ)
+                let angle = (window.screen && window.screen.orientation) ? window.screen.orientation.angle : window.orientation;
                 if (angle === 90 || angle === -90 || angle === 270) {
                     if (window.player && !window.player.fullscreen.active) {
-                        try { 
-                            window.player.fullscreen.enter(); 
-                        } catch(err) { console.log("Không thể tự động Fullscreen"); }
+                        try { window.player.fullscreen.enter(); } catch(err) {}
                     }
-                } 
-                // Nếu cầm dọc (0, 180 độ)
-                else {
+                } else {
                     if (window.player && window.player.fullscreen.active) {
-                        try { 
-                            window.player.fullscreen.exit(); 
-                        } catch(err) {}
+                        try { window.player.fullscreen.exit(); } catch(err) {}
                     }
                 }
             }, 300); 

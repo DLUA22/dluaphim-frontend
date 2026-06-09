@@ -2,9 +2,6 @@ const urlParams = new URLSearchParams(window.location.search);
 const slug = urlParams.get("slug");
 let globalMovieData = null; 
 
-// ==========================================
-// 1. TẢI CHI TIẾT PHIM (CÓ ĐA SERVER)
-// ==========================================
 async function loadMovieDetail() {
     try {
         const response = await fetch(`https://phimapi.com/phim/${slug}`);
@@ -78,106 +75,27 @@ function renderEpisodes(serverData, movieSlug, serverIndex) {
     });
 }
 
-// ==========================================
-// 2. CHUÔNG THÔNG BÁO, TÊN HIỂN THỊ & BÌNH LUẬN
-// ==========================================
-async function checkLoginState() {
-    const username = sessionStorage.getItem('username');
-    const userContainer = document.querySelector('.user-account');
+function renderCommentBox() {
     const commentFormArea = document.getElementById('comment-form-area');
-
-    if (username) {
-        let avatarSrc = "https://i.pravatar.cc/150?img=11";
-        let displayName = username; 
+    const username = sessionStorage.getItem('username');
+    
+    if (username && commentFormArea) {
+        // Lấy thông tin có sẵn trong máy do loadHeader.js đã lưu
+        const avatarSrc = sessionStorage.getItem('userAvatar') || 'https://i.pravatar.cc/150?img=11';
+        const displayName = sessionStorage.getItem('displayName') || username; 
         
-        try {
-            const res = await fetch(`https://dluaphim-api.onrender.com/api/users/${username}`);
-            const userData = await res.json();
-            if (userData.avatar) avatarSrc = userData.avatar;
-            if (userData.fullName) displayName = userData.fullName; 
-        } catch (e) {}
-
-        sessionStorage.setItem('displayName', displayName);
-        sessionStorage.setItem('userAvatar', avatarSrc);
-
-        let notiHtml = '';
-        let unreadCount = 0;
-        try {
-            const notiRes = await fetch(`https://dluaphim-api.onrender.com/api/movies/notifications/${username}`);
-            const notifications = await notiRes.json();
-            
-            if (Array.isArray(notifications)) {
-                unreadCount = notifications.length; 
-                
-                if(unreadCount > 0) {
-                    notifications.forEach(noti => {
-                        const date = new Date(noti.createdAt).toLocaleString('vi-VN');
-                        // Thêm nút X ở góc phải mỗi thông báo
-                        notiHtml += `
-                            <div style="position: relative; border-bottom: 1px solid #444;">
-                                <a href="watch.html?slug=${noti.movieId}#comment-${noti._id}" style="display: block; padding: 10px 30px 10px 10px; text-decoration: none; color: white;">
-                                    <div style="font-size: 13px; color: #ffda76;">💬 <strong>${noti.fullName || noti.username}</strong> đã trả lời bạn</div>
-                                    <div style="font-size: 12px; color: #ccc; margin-top: 3px;">"${noti.content.substring(0, 30)}..."</div>
-                                    <div style="font-size: 10px; color: #888; margin-top: 5px;">🕒 ${date}</div>
-                                </a>
-                                <button onclick="deleteNoti('${noti._id}', event)" style="position: absolute; top: 10px; right: 5px; background: transparent; border: none; color: #888; font-size: 12px; cursor: pointer; padding: 5px;" title="Xóa thông báo">✖</button>
-                            </div>
-                        `;
-                    });
-                    
-                    // Thêm nút Xóa Tất Cả ở dưới cùng
-                    notiHtml += `
-                        <div style="text-align: center; padding: 10px; background: #2a2a2f;">
-                            <button onclick="clearAllNoti(event)" style="background: #ff4d4d; color: white; border: none; padding: 5px 15px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold;">🗑 Xóa tất cả</button>
-                        </div>
-                    `;
-                } else {
-                    notiHtml = `<div style="padding: 10px; color: #888; text-align: center; font-size: 13px;">Không có thông báo mới</div>`;
-                }
-            }
-        } catch(e){}
-
-        if(userContainer) {
-            userContainer.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 20px;">
-                    <div style="position: relative; cursor: pointer;" onclick="document.getElementById('noti-menu').classList.toggle('show')">
-                        <span style="font-size: 24px;">🔔</span>
-                        ${unreadCount > 0 ? `<span style="position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 11px; font-weight: bold; border: 2px solid #1c1c1f;">${unreadCount}</span>` : ''}
-                        <div id="noti-menu" class="user-dropdown-menu" style="width: 280px; right: -20px; max-height: 350px; overflow-y: auto; background: #1c1c1f; border: 1px solid #444; box-shadow: 0 5px 15px rgba(0,0,0,0.8); z-index: 9999;">
-                            <h4 style="margin: 0; padding: 12px; border-bottom: 1px solid #444; color: white; background: #2a2a2f;">Thông báo của bạn</h4>
-                            ${notiHtml}
-                        </div>
-                    </div>
-                    <div style="position: relative; display: inline-block;">
-                        <div class="avatar-btn" onclick="document.getElementById('user-menu').classList.toggle('show')" style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                            <img src="${avatarSrc}" alt="Avatar" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid #ffda76;">
-                            <span style="color: white; font-weight: bold; font-size: 14px;">${displayName} ▾</span>
-                        </div>
-                        <div id="user-menu" class="user-dropdown-menu">
-                            <a href="profile.html">⚙️ Đổi thông tin</a>
-                            <a href="#" onclick="sessionStorage.clear(); window.location.reload();" style="color: #ff4d4d;">👋 Đăng xuất</a>
-                        </div>
-                    </div>
+        commentFormArea.innerHTML = `
+            <div style="display: flex; gap: 15px; align-items: flex-start;">
+                <img src="${avatarSrc}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 1px solid #444;">
+                <div style="flex: 1;">
+                    <textarea id="comment-input" placeholder="${displayName} ơi, bạn nghĩ sao về phim này?..." style="width: 100%; height: 60px; background: #1c1c1f; border: 1px solid #444; border-radius: 8px; padding: 12px; color: white; font-family: inherit; resize: none;"></textarea>
+                    <button onclick="submitComment()" style="background: #ffda76; color: black; padding: 8px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; float: right; margin-top: 10px;">Gửi Bình Luận</button>
                 </div>
-            `;
-        }
-
-        if(commentFormArea) {
-            commentFormArea.innerHTML = `
-                <div style="display: flex; gap: 15px; align-items: flex-start;">
-                    <img src="${avatarSrc}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 1px solid #444;">
-                    <div style="flex: 1;">
-                        <textarea id="comment-input" placeholder="${displayName} ơi, bạn nghĩ sao về phim này?..." style="width: 100%; height: 60px; background: #1c1c1f; border: 1px solid #444; border-radius: 8px; padding: 12px; color: white; font-family: inherit; resize: none;"></textarea>
-                        <button onclick="submitComment()" style="background: #ffda76; color: black; padding: 8px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; float: right; margin-top: 10px;">Gửi Bình Luận</button>
-                    </div>
-                </div>
-                <div style="clear: both;"></div>
-            `;
-        }
-    } else {
-        if(commentFormArea) {
-            commentFormArea.innerHTML = `<p style="color: #888; font-size: 14px;">Vui lòng <a href="login.html" style="color: #ffda76; font-weight: bold;">đăng nhập</a> để bình luận.</p>`;
-        }
+            </div>
+            <div style="clear: both;"></div>
+        `;
+    } else if(commentFormArea) {
+        commentFormArea.innerHTML = `<p style="color: #888; font-size: 14px;">Vui lòng <a href="login.html" style="color: #ffda76; font-weight: bold;">đăng nhập</a> để bình luận.</p>`;
     }
 }
 
@@ -292,47 +210,12 @@ window.showReplyForm = function(parentId, replyToUsername, displayCmtName) {
     document.getElementById(`reply-input-${parentId}`).focus();
 }
 
-// 3. KHỞI CHẠY TẤT CẢ
 document.addEventListener("DOMContentLoaded", () => {
     if (!slug) {
         window.location.href = "index.html";
         return;
     }
     loadMovieDetail();
-    checkLoginState();
+    renderCommentBox();
     loadComments();
 });
-
-window.addEventListener('click', function(event) {
-    if (!event.target.closest('.avatar-btn') && !event.target.closest('.user-dropdown-menu') && !event.target.closest('[onclick*="noti-menu"]')) {
-        document.querySelectorAll('.user-dropdown-menu').forEach(menu => menu.classList.remove('show'));
-    }
-});
-// ================= HÀM XÓA THÔNG BÁO TỪ MENU CHUÔNG =================
-window.deleteNoti = async function(notiId, event) {
-    event.stopPropagation(); // Ngăn trình duyệt nhảy link sang trang phim
-    try {
-        await fetch(`https://dluaphim-api.onrender.com/api/movies/notifications/${notiId}/read`, { method: 'PUT' });
-        
-        // Gọi lại hàm để vẽ lại cái chuông
-        if(typeof checkLogin === 'function') await checkLogin();
-        if(typeof checkLoginState === 'function') await checkLoginState();
-        
-        // Mở lại menu chuông cho đỡ bị tắt đột ngột
-        document.getElementById('noti-menu').classList.add('show');
-    } catch(e) {}
-}
-
-window.clearAllNoti = async function(event) {
-    event.stopPropagation();
-    const username = sessionStorage.getItem('username');
-    if(!username) return;
-    try {
-        await fetch(`https://dluaphim-api.onrender.com/api/movies/notifications/clear-all/${username}`, { method: 'PUT' });
-        
-        if(typeof checkLogin === 'function') await checkLogin();
-        if(typeof checkLoginState === 'function') await checkLoginState();
-        
-        document.getElementById('noti-menu').classList.add('show');
-    } catch(e) {}
-}

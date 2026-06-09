@@ -49,35 +49,6 @@
     <script>
         const username = sessionStorage.getItem('username');
         if (!username) window.location.href = 'index.html';
-
-        // 1. Lấy thông tin User để vẽ Avatar (Đồng bộ với Profile)
-        async function loadUserInfo() {
-            try {
-                const userRes = await fetch(`https://dluaphim-api.onrender.com/api/users/${username}`);
-                const userData = await userRes.json();
-                
-                const displayAvatar = userData.avatar || "https://i.pravatar.cc/150?img=11";
-                const displayName = userData.fullName || username;
-
-                document.getElementById('user-info').innerHTML = `
-                    <div style="position: relative; display: inline-block;">
-                        <div class="avatar-btn" onclick="document.getElementById('user-menu').classList.toggle('show')" style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                            <img src="${displayAvatar}" alt="Avatar" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 1px solid #ffda76;">
-                            <span style="color: white; font-size: 14px; font-weight: bold;">${displayName} ▾</span>
-                        </div>
-                        
-                        <div id="user-menu" class="user-dropdown-menu">
-                            <a href="profile.html">⚙️ Đổi thông tin & Avatar</a>
-                            <a href="favorites.html" style="color: #ffda76;">💖 Phim đã tim</a>
-                            <a href="history.html">🕒 Lịch sử xem</a>
-                            <hr style="border-color: #333; margin: 5px 0;">
-                            <a href="#" onclick="sessionStorage.clear(); window.location.href='index.html';" style="color: #ff4d4d;">👋 Đăng xuất</a>
-                        </div>
-                    </div>
-                `;
-            } catch (err) { console.error(err); }
-        }
-
         // 2. Tải danh sách phim bằng API tối ưu (Production)
         async function loadFavorites() {
             try {
@@ -187,7 +158,6 @@
         });
 
         // Khởi chạy
-        loadUserInfo();
         loadFavorites();
     </script>
     <script src="loadHeader.js"></script>
