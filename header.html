@@ -1,0 +1,54 @@
+<header class="navbar">
+        <div class="logo">
+            <h2 onclick="window.location.href='index.html'" style="cursor: pointer;">🎬 DLUAPHIM</h2>
+        </div>
+        
+        <!-- 1. Đổi class thành search-bar để JS bắt được sự kiện gõ phím -->
+        <div class="search-bar">
+            <input type="text" placeholder="🔍 Tìm kiếm phim, diễn viên...">
+        </div>
+        
+        <nav class="menu">
+            <!-- Đã bỏ Chủ Đề -->
+            <a href="topviews.html" style="color: #ffda76; font-weight: bold; font-size: 15px; margin-right: 20px;">🔥 Top Lượt Xem</a>
+            <div class="dropdown" style="display: inline-block;">
+                <a href="#" style="cursor: pointer;">Thể loại ▾</a>
+                <div class="dropdown-menu">
+                    <!-- Gắn sự kiện filterMovies('genre', 'Tên_Thể_Loại') cho từng nút -->
+                    <a href="#" onclick="filterMovies('genre', 'Hành Động')">Hành Động</a>
+                    <a href="#" onclick="filterMovies('genre', 'Cổ Trang')">Cổ Trang</a>
+                    <a href="#" onclick="filterMovies('genre', 'Chiến Tranh')">Chiến Tranh</a>
+                    <a href="#" onclick="filterMovies('genre', 'Viễn Tưởng')">Viễn Tưởng</a>
+                    <a href="#" onclick="filterMovies('genre', 'Kinh Dị')">Kinh Dị</a>
+                    <a href="#" onclick="filterMovies('genre', 'Tài Liệu')">Tài Liệu</a>
+                    <a href="#" onclick="filterMovies('genre', 'Bí Ẩn')">Bí Ẩn</a>
+                    <a href="#" onclick="filterMovies('genre', 'Phim 18+')">Phim 18+</a>
+                    <a href="#" onclick="filterMovies('genre', 'Tình Cảm')">Tình Cảm</a>
+                    <a href="#" onclick="filterMovies('genre', 'Tâm Lý')">Tâm Lý</a>
+                    <a href="#" onclick="filterMovies('genre', 'Thể Thao')">Thể Thao</a>
+                    <a href="#" onclick="filterMovies('genre', 'Phiêu Lưu')">Phiêu Lưu</a>
+                    <a href="#" onclick="filterMovies('genre', 'Âm Nhạc')">Âm Nhạc</a>
+                    <a href="#" onclick="filterMovies('genre', 'Gia Đình')">Gia Đình</a>
+                    <a href="#" onclick="filterMovies('genre', 'Học Đường')">Học Đường</a>
+                    <a href="#" onclick="filterMovies('genre', 'Hài Hước')">Hài Hước</a>
+                    <a href="#" onclick="filterMovies('genre', 'Hình Sự')">Hình Sự</a>
+                    <a href="#" onclick="filterMovies('genre', 'Võ Thuật')">Võ Thuật</a>
+                    <a href="#" onclick="filterMovies('genre', 'Khoa Học')">Khoa Học</a>
+                    <a href="#" onclick="filterMovies('genre', 'Thần Thoại')">Thần Thoại</a>
+                    <a href="#" onclick="filterMovies('genre', 'Chính Kịch')">Chính Kịch</a>
+                    <a href="#" onclick="filterMovies('genre', 'Kinh Điển')">Kinh Điển</a>
+                    <a href="#" onclick="filterMovies('genre', 'Phim Ngắn')">Phim Ngắn</a>
+                </div>
+            </div>
+
+            <!-- Gắn sự kiện filterMovies('type', 'loại_phim') -->
+            <a href="#" onclick="filterMovies('type', 'single')">Phim Lẻ</a>
+            <a href="#" onclick="filterMovies('type', 'series')">Phim Bộ</a>
+        </nav>
+        
+        <div class="user-account">
+            <a href="login.html" id="user-btn" style="text-decoration: none;">
+                <button class="btn-login">👤 Thành viên</button>
+            </a>
+        </div>
+</header>

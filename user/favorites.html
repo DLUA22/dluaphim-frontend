@@ -31,17 +31,7 @@
     </style>
 </head>
 <body>
-    <!-- Navbar đồng bộ phong cách cao cấp -->
-    <header class="navbar" style="background-color: rgba(15, 15, 17, 0.9); backdrop-filter: blur(10px);">
-        <div class="logo">
-            <h2 onclick="window.location.href='index.html'" style="cursor: pointer;">🎬 DLUAPHIM</h2>
-        </div>
-        <nav class="menu">
-        </nav>
-        <div class="user-account" id="user-info">
-            <!-- JS render Avatar -->
-        </div>
-    </header>
+    <div id="header-placeholder"></div>
 
     <!-- Khu vực tiêu đề -->
     <div class="page-header">
@@ -200,5 +190,6 @@
         loadUserInfo();
         loadFavorites();
     </script>
+    <script src="loadHeader.js"></script>
 </body>
 </html>
