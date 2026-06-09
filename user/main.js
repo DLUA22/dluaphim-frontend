@@ -16,6 +16,27 @@ async function fetchMovies() {
         const response = await fetch('https://dluaphim-api.onrender.com/api/movies');
         allMovies = await response.json();      
         renderMovies(allMovies); 
+        const response = await fetch('https://dluaphim-api.onrender.com/api/movies');
+        allMovies = await response.json();      
+        renderMovies(allMovies); 
+        const urlParamsSearch = new URLSearchParams(window.location.search);
+        const searchKeyword = urlParamsSearch.get('search');
+        
+        if (searchKeyword) {
+            const searchTerm = searchKeyword.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+            const filteredMovies = allMovies.filter(movie => {
+                const normalizedTitle = movie.title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+                return normalizedTitle.includes(searchTerm);
+            });
+            
+            renderMovies(filteredMovies);
+            setTimeout(() => {
+                const listEl = document.getElementById('movie-list');
+                if(listEl) listEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const headerInput = document.querySelector('.search-bar input');
+                if(headerInput) headerInput.value = searchKeyword;
+            }, 800);
+        }
         fetchTopMovies();    
     } catch (error) {
         console.error('Lỗi tải phim:', error);
@@ -23,7 +44,7 @@ async function fetchMovies() {
 }
 
 function renderMovies(moviesArray, page = 1) {
-    currentDisplayMovies = moviesArray; // Lưu lại để dùng lúc chuyển trang
+    currentDisplayMovies = moviesArray;
     const movieList = document.getElementById('movie-list');
     movieList.innerHTML = ''; 
 

@@ -15,21 +15,97 @@ document.addEventListener("DOMContentLoaded", function() {
             // 2. Kích hoạt Avatar & Chuông thông báo ngay lập tức
             checkLogin();
 
-            // 3. Kích hoạt tính năng Tìm kiếm không dấu
             const searchInput = document.querySelector('.search-bar input');
-            if (searchInput) {
-                searchInput.addEventListener('input', (event) => {
+            const searchBarContainer = document.querySelector('.search-bar');
+
+            if (searchInput && searchBarContainer) {
+                // 1. Tạo một cái khung ẩn để chứa danh sách phim xổ xuống
+                searchBarContainer.style.position = 'relative';
+                const suggestionBox = document.createElement('div');
+                suggestionBox.id = 'search-suggestions';
+                suggestionBox.style.cssText = 'position: absolute; top: 110%; left: 0; right: 0; background: #1c1c1f; border-radius: 8px; max-height: 450px; overflow-y: auto; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.9); display: none; border: 1px solid #444;';
+                searchBarContainer.appendChild(suggestionBox);
+
+                let searchTimeout = null;
+                let globalSearchMovies = []; // Biến lưu tạm danh sách phim
+
+                searchInput.addEventListener('input', async (event) => {
                     const searchTerm = event.target.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
                     
-                    // Nếu đang ở trang chủ (có biến allMovies) thì lọc trực tiếp
-                    if (typeof allMovies !== 'undefined' && typeof renderMovies === 'function') {
-                        const filteredMovies = allMovies.filter(movie => {
+                    if (!searchTerm) {
+                        suggestionBox.style.display = 'none';
+                        // Nếu xóa trắng ô tìm kiếm mà đang ở trang chủ, thì hiển thị lại toàn bộ phim
+                        if (typeof allMovies !== 'undefined' && typeof renderMovies === 'function') renderMovies(allMovies);
+                        return;
+                    }
+
+                    // 2. Kỹ thuật Debounce (Chờ 300ms sau khi ngừng gõ mới tìm)
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(async () => {
+                        
+                        // Nếu chưa có data thì tự động đi lấy (Hỗ trợ khi đang đứng ở trang Watch, Detail...)
+                        if (globalSearchMovies.length === 0) {
+                            if (typeof allMovies !== 'undefined' && allMovies.length > 0) {
+                                globalSearchMovies = allMovies; // Mượn data trang chủ nếu có
+                            } else {
+                                try {
+                                    const res = await fetch('https://dluaphim-api.onrender.com/api/movies');
+                                    globalSearchMovies = await res.json();
+                                } catch(e) { console.error("Lỗi lấy dữ liệu tìm kiếm"); }
+                            }
+                        }
+
+                        // 3. Lọc phim không dấu
+                        const results = globalSearchMovies.filter(movie => {
                             const normalizedTitle = movie.title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
                             return normalizedTitle.includes(searchTerm);
                         });
-                        renderMovies(filteredMovies);
-                    } else {
-                        // Nếu đang ở trang Khác (Detail, Watch), có thể ấn Enter để nhảy về Index tìm (Tính năng mở rộng sau này)
+
+                        // 4. Vẽ giao diện Dropdown tuyệt đẹp
+                        if (results.length > 0) {
+                            const top5Results = results.slice(0, 6); // Chỉ lấy 6 phim đầu tiên cho nhẹ menu
+                            
+                            suggestionBox.innerHTML = top5Results.map(m => `
+                                <a href="detail.html?slug=${m.slug}" style="display: flex; align-items: center; gap: 15px; padding: 12px 15px; border-bottom: 1px solid #333; text-decoration: none; color: white; transition: 0.2s;" onmouseover="this.style.background='#2a2a2f'" onmouseout="this.style.background='transparent'">
+                                    <img src="${m.thumbnail}" style="width: 45px; height: 65px; object-fit: cover; border-radius: 4px;">
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: bold; font-size: 15px; margin-bottom: 5px;">${m.title}</div>
+                                        <div style="font-size: 12px; color: #888;">
+                                            <span style="color: #ffda76; border: 1px solid #ffda76; padding: 1px 4px; border-radius: 3px; margin-right: 5px;">${m.type === 'single' ? 'Phim Lẻ' : 'Phim Bộ'}</span> 
+                                            ⭐ ${m.status || 'Đang cập nhật'}
+                                        </div>
+                                    </div>
+                                </a>
+                            `).join('') + `
+                                <div style="text-align: center; padding: 12px; font-size: 14px; color: #ffda76; cursor: pointer; background: #111; font-weight: bold;" onclick="window.location.href='index.html?search=${encodeURIComponent(event.target.value)}'">
+                                    🔍 Xem tất cả ${results.length} kết quả ➔
+                                </div>
+                            `;
+                            suggestionBox.style.display = 'block';
+                        } else {
+                            suggestionBox.innerHTML = `
+                                <div style="padding: 20px; text-align: center; color: #888; font-size: 15px;">
+                                    <div style="font-size: 30px; margin-bottom: 10px;">📭</div>
+                                    Không tìm thấy phim "<span style="color: white;">${event.target.value}</span>"
+                                </div>
+                            `;
+                            suggestionBox.style.display = 'block';
+                        }
+                    }, 300);
+                });
+
+                // Bấm Enter thì bay về trang chủ tìm
+                searchInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        const term = e.target.value.trim();
+                        if(term) window.location.href = `index.html?search=${encodeURIComponent(term)}`;
+                    }
+                });
+
+                // Click ra ngoài thì đóng hộp thoại
+                document.addEventListener('click', (e) => {
+                    if (!searchBarContainer.contains(e.target)) {
+                        suggestionBox.style.display = 'none';
                     }
                 });
             }
