@@ -214,15 +214,6 @@ function startAutoSlide() {
     }, 5000); 
 }
 
-// THANH TÌM KIẾM
-document.querySelector('.search-bar input').addEventListener('input', (event) => {
-    const searchTerm = event.target.value.toLowerCase().trim();
-    const filteredMovies = allMovies.filter(movie => 
-        movie.title.toLowerCase().includes(searchTerm)
-    );
-    renderMovies(filteredMovies);
-});
-
 // =========================================================================
 // PHẦN ĐƯỢC NÂNG CẤP: QUẢN LÝ ĐĂNG NHẬP, ĐỒNG BỘ TÊN VÀ CHUÔNG THÔNG BÁO
 // =========================================================================
