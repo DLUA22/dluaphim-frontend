@@ -711,34 +711,29 @@ body {
         font-size: 16px !important; /* Ép 16px để iPhone không bị zoom cận mặt khi bấm gõ phím */
     }
 }
+/* Sửa lỗi dàn trang danh sách tập phim */
 #episode-list {
-    display: flex !important;
-    flex-wrap: wrap !important; /* Tự động xuống dòng khi hết chỗ */
-    gap: 8px !important;
+    display: flex !important;       /* Sử dụng Flexbox */
+    flex-wrap: wrap !important;     /* Tự động xuống dòng khi hết chỗ */
+    justify-content: flex-start !important; /* Dàn hàng từ trái qua */
+    gap: 8px !important;            /* Khoảng cách giữa các nút */
     padding: 10px 0 !important;
     width: 100% !important;
 }
 
+/* Đảm bảo các nút tập phim không bị méo */
 .episode-btn {
-    flex: 0 0 auto !important; /* Không cho nút bị co giãn */
-    min-width: 45px;
-    padding: 8px 12px !important;
-    text-align: center;
+    flex: 0 0 auto !important;      /* Nút giữ nguyên kích thước không bị co */
+    min-width: 45px !important;
+    padding: 10px 15px !important;
     background: #333 !important;
     color: #fff !important;
-    border-radius: 4px !important;
-    cursor: pointer;
-    font-size: 13px !important;
-    transition: 0.2s;
+    border: none !important;
+    border-radius: 5px !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    text-align: center !important;
 }
 
-.episode-btn:hover {
-    background: #ffda76 !important;
-    color: #000 !important;
-}
-
-.episode-btn.active {
-    background: #ffda76 !important;
-    color: #000 !important;
-    font-weight: bold;
-}
+.episode-btn:hover { background: #ffcc00 !important; color: #000 !important; }
+.episode-btn.active { background: #ffda76 !important; color: #000 !important; font-weight: bold; }
