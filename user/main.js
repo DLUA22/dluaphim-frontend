@@ -9,34 +9,43 @@ async function fetchMovies() {
         if (username) {
             const userRes = await fetch(`https://dluaphim-api.onrender.com/api/users/${username}`);
             const userData = await userRes.json();
-            if (userData.favorites) {
-                userFavorites = userData.favorites;
-            }
+            if (userData.favorites) userFavorites = userData.favorites;
         }
-        const response = await fetch('https://dluaphim-api.onrender.com/api/movies');
-        allMovies = await response.json();      
-        renderMovies(allMovies); 
-        const urlParamsSearch = new URLSearchParams(window.location.search);
-        const searchKeyword = urlParamsSearch.get('search');
-        
-        if (searchKeyword) {
-            const searchTerm = searchKeyword.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
-            const filteredMovies = allMovies.filter(movie => {
-                const normalizedTitle = movie.title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-                return normalizedTitle.includes(searchTerm);
-            });
-            renderMovies(filteredMovies);
-            setTimeout(() => {
-                const listEl = document.getElementById('movie-list');
-                if(listEl) listEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                const headerInput = document.querySelector('.search-bar input');
-                if(headerInput) headerInput.value = searchKeyword;
-            }, 800); 
+        const cachedMovies = sessionStorage.getItem('dluaphim_allMovies'); 
+        if (cachedMovies) {
+            allMovies = JSON.parse(cachedMovies);
+            renderMovies(allMovies);
+            handleGlobalSearch();
+        } else {
+            const response = await fetch('https://dluaphim-api.onrender.com/api/movies');
+            allMovies = await response.json();      
+            sessionStorage.setItem('dluaphim_allMovies', JSON.stringify(allMovies)); 
+            renderMovies(allMovies); 
+            handleGlobalSearch();
         }
-
         fetchTopMovies();    
     } catch (error) {
         console.error('Lỗi tải phim:', error);
+    }
+}
+
+function handleGlobalSearch() {
+    const urlParamsSearch = new URLSearchParams(window.location.search);
+    const searchKeyword = urlParamsSearch.get('search');
+    
+    if (searchKeyword) {
+        const searchTerm = searchKeyword.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+        const filteredMovies = allMovies.filter(movie => {
+            const normalizedTitle = movie.title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+            return normalizedTitle.includes(searchTerm);
+        });
+        renderMovies(filteredMovies);
+        setTimeout(() => {
+            const listEl = document.getElementById('movie-list');
+            if(listEl) listEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            const headerInput = document.querySelector('.search-bar input');
+            if(headerInput) headerInput.value = searchKeyword;
+        }, 800); 
     }
 }
 
@@ -47,11 +56,9 @@ function renderMovies(moviesArray, page = 1) {
 
     if (moviesArray.length === 0) {
         movieList.innerHTML = '<h3 style="color:white; padding: 20px; width: 100%; text-align: center;">Không tìm thấy phim nào!</h3>';
-        document.getElementById('pagination').innerHTML = ''; // Ẩn luôn phân trang
+        document.getElementById('pagination').innerHTML = '';
         return;
     }
-
-    // --- THUẬT TOÁN CẮT MẢNG LẤY 28 PHIM ---
     const startIndex = (page - 1) * MOVIES_PER_PAGE;
     const endIndex = startIndex + MOVIES_PER_PAGE;
     const moviesToRender = moviesArray.slice(startIndex, endIndex);
@@ -69,7 +76,7 @@ function renderMovies(moviesArray, page = 1) {
         const movieCard = `
             <div class="movie-card" onclick="window.location.href='detail.html?slug=${movie.slug}'">
                 <div class="image-container">
-                    <img src="${movie.thumbnail}" alt="${movie.title}">
+                    <img src="${movie.thumbnail}" alt="${movie.title}" loading="lazy">
                     <div class="badge">${movie.status || 'Đang cập nhật'}</div>
                 </div>
                 <h3 class="title">${movie.title}</h3>
