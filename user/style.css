@@ -711,3 +711,25 @@ body {
         font-size: 16px !important; /* Ép 16px để iPhone không bị zoom cận mặt khi bấm gõ phím */
     }
 }
+#episode-grid {
+    display: flex;        /* Bật chế độ dàn hàng ngang */
+    flex-wrap: wrap;      /* Cho phép xuống dòng nếu hết chỗ */
+    gap: 10px;            /* Khoảng cách giữa các nút */
+    padding: 10px 0;
+}
+
+.episode-btn {
+    min-width: 60px;      /* Đảm bảo nút không bị bóp méo */
+    padding: 8px 12px;
+    border: 1px solid #444;
+    background: #2a2a2f;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.episode-btn:hover {
+    background: #ffda76;
+    color: black;
+}
