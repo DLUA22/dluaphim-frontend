@@ -11,16 +11,19 @@ async function fetchMovies() {
             const userData = await userRes.json();
             if (userData.favorites) userFavorites = userData.favorites;
         }
-        const cachedMovies = sessionStorage.getItem('dluaphim_allMovies'); 
+        const cachedMovies = sessionStorage.getItem('dluaphim_allMovies');
         if (cachedMovies) {
             allMovies = JSON.parse(cachedMovies);
-            renderMovies(allMovies);
+            const randomMovies = shuffleArray(allMovies);
+            renderMovies(randomMovies);
+            
             handleGlobalSearch();
         } else {
             const response = await fetch('https://dluaphim-api.onrender.com/api/movies');
             allMovies = await response.json();      
-            sessionStorage.setItem('dluaphim_allMovies', JSON.stringify(allMovies)); 
-            renderMovies(allMovies); 
+            sessionStorage.setItem('dluaphim_allMovies', JSON.stringify(allMovies));
+            const randomMovies = shuffleArray(allMovies);
+            renderMovies(randomMovies); 
             handleGlobalSearch();
         }
         fetchTopMovies();    
@@ -338,6 +341,14 @@ function handleChatEnter(event) {
     if (event.key === 'Enter') {
         sendChatMessage();
     }
+}
+function shuffleArray(array) {
+    let shuffled = [...array]; // Tạo một bản sao để không làm ảnh hưởng đến mảng gốc
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; // Đổi chỗ 2 phần tử
+    }
+    return shuffled;
 }
 document.getElementById('chat-window').style.display = 'none';
 fetchMovies();
