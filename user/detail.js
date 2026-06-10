@@ -124,14 +124,14 @@ function renderEpisodeButtons(serverData, movieSlug, currentServerIdx) {
         renderChunk(0, serverData.length, movieSlug, currentServerIdx, container);
     } else {
         // Có thêm padding-right: 20px để fix lẹm nút như bên watch.html
-        let rangeHTML = `<div class="ep-tabs-wrapper" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; width: 100%;">`;
+        let rangeHTML = `<div class="ep-tabs-wrapper" style="display: flex; flex-wrap: nowrap; gap: 8px; margin-bottom: 15px; width: 100%; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; padding-bottom: 5px;">`;
         const totalChunks = Math.ceil(serverData.length / CHUNK_SIZE);
         for (let i = 0; i < totalChunks; i++) {
             const start = i * CHUNK_SIZE + 1;
             const end = Math.min((i + 1) * CHUNK_SIZE, serverData.length);
             const bg = i === 0 ? '#ffda76' : '#2a2a2f'; // Mặc định mở Tab 1
             const color = i === 0 ? '#000' : '#fff';    
-            rangeHTML += `<button class="ep-tab-btn" onclick="changeEpChunk(${i}, '${movieSlug}', ${currentServerIdx})" style="background: ${bg}; color: ${color}; border: 1px solid #444; padding: 6px 15px; border-radius: 4px; cursor: pointer; white-space: nowrap; font-size: 13px; font-weight: bold; transition: 0.2s; flex: 0 0 auto;">Tập ${start}-${end}</button>`;
+            rangeHTML += `<button class="ep-tab-btn" onclick="changeEpChunk(${i}, '${movieSlug}', ${currentServerIdx})" style="background: ${bg}; color: ${color}; border: 1px solid #444; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.2s; flex: 0 0 auto; white-space: nowrap;">Tập ${start}-${end}</button>`;
         }
         rangeHTML += `</div>`;
         rangeHTML += `<div id="ep-buttons-container"></div>`;
