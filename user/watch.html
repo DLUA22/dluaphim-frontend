@@ -2,19 +2,22 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Đang xem phim - DLUAPHIM</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+    <style>
+        /* Ẩn thanh cuộn của Tab trên Chrome/Safari */
+        .ep-tabs-wrapper::-webkit-scrollbar { display: none; }
+    </style>
 </head>
 <body>
     <div id="header-placeholder"></div>
 
     <main class="main-content" style="max-width: 1200px; margin: 0 auto;">
         
-        <!-- KHUNG PHÁT VIDEO -->
         <div id="player-container" style="width: 100%; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);"></div>
 
         <div class="watch-layout">
@@ -32,13 +35,11 @@
                 </div>
 
                 <div class="box-section">
-                    <!-- KHU VỰC ĐA SERVER (VIETSUB / THUYẾT MINH) -->
                     <h3 style="margin-bottom: 15px; color: #ffda76;">🌐 Chọn Mạng (Server)</h3>
                     <div id="server-list" style="display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; border-bottom: 1px solid #333; padding-bottom: 15px;"></div>
 
                     <h3 style="margin-bottom: 15px;">≡ Chọn Tập Phim</h3>
-                    <div id="episode-list" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
-                </div>
+                    <div id="episode-list"></div> </div>
 
                 <div id="comments-section" style="margin-top: 40px;">
                     <h3 style="margin-bottom: 15px; color: #ffda76;">💬 Bình luận (<span id="comment-count">0</span>)</h3>
@@ -71,7 +72,7 @@
         fetch(`https://dluaphim-api.onrender.com/api/movies/${slug}/view`, { method: 'POST' }).catch(()=>{});
 
         // ==========================================
-        // 1. TẢI CHI TIẾT PHIM (CÓ ĐA SERVER)
+        // 1. TẢI CHI TIẾT PHIM
         // ==========================================
         async function loadMovieDetail() {
             try {
@@ -82,7 +83,6 @@
                     const movie = data.movie;
                     globalMovieData = data; 
 
-                    // 👇 ĐÃ SỬA LẠI ĐÚNG ID CỦA TRANG WATCH 👇
                     const thumbEl = document.getElementById("detail-thumb");
                     if (thumbEl) thumbEl.src = movie.thumb_url;
                     
@@ -99,7 +99,6 @@
 
                     renderActors(movie.actor);
 
-                    // Lưu lịch sử xem phim
                     const username = sessionStorage.getItem('username');
                     if (username) {
                         fetch('https://dluaphim-api.onrender.com/api/users/history', {
@@ -109,12 +108,11 @@
                         }).catch(()=>{});
                     }
 
-                    // Tải server và phát phim
                     const episodes = data.episodes; 
                     if (episodes && episodes.length > 0) {
                         renderServerButtons(episodes);
                         const currentServerData = episodes[serverIndex].server_data;
-                        renderEpisodeButtons(currentServerData);
+                        renderEpisodeButtons(currentServerData, slug, serverIndex);
 
                         let videoUrl = '';
                         if (tapSlug) {
@@ -170,28 +168,99 @@
             });
         }
 
-        function renderEpisodeButtons(serverData) {
-            const listDiv = document.getElementById('episode-list');
-            listDiv.innerHTML = ''; 
-            serverData.forEach(ep => {
-                const isActive = ep.slug === tapSlug ? 'active' : ''; 
-                const btn = document.createElement('button');
-                btn.className = `episode-btn ${isActive}`;
-                btn.style.padding = "10px 15px";
-                btn.style.background = isActive === 'active' ? "#ffda76" : "#333";
-                btn.style.color = isActive === 'active' ? "#000" : "#fff";
-                btn.style.border = "none";
-                btn.style.borderRadius = "5px";
-                btn.style.cursor = "pointer";
-                btn.style.fontWeight = isActive === 'active' ? "bold" : "normal";
-                btn.innerText = ep.name;
-                btn.onclick = () => {
-                    window.location.href = `watch.html?slug=${slug}&server=${serverIndex}&tap=${ep.slug}`;
-                };
-                listDiv.appendChild(btn);
-            });
+        // ==========================================
+        // 2. THUẬT TOÁN TẠO TAB TẬP PHIM CHUẨN APP
+        // ==========================================
+        let currentServerEpisodes = []; 
+        const CHUNK_SIZE = 100; // Thay đổi số lượng tập mỗi Tab ở đây
+
+        function renderEpisodeButtons(serverData, movieSlug, currentServerIdx) {
+            currentServerEpisodes = serverData; 
+            const epListDiv = document.getElementById("episode-list");
+            if(!epListDiv) return;
+            
+            // Xóa sạch CSS cũ đang bị dính Grid của người dùng
+            epListDiv.innerHTML = ''; 
+            epListDiv.style.display = "block"; // Ép thành block để không bị hỏng thẻ Tab
+
+            if (serverData.length <= CHUNK_SIZE) {
+                // Nếu phim ngắn -> Tạo thẳng khung chứa lưới phim
+                const container = document.createElement('div');
+                epListDiv.appendChild(container);
+                renderChunk(0, serverData.length, movieSlug, currentServerIdx, container);
+            } else {
+                // Nếu phim dài -> Tạo thanh Tab và Khung chứa lưới phim
+                let activeChunk = 0;
+                if (typeof tapSlug !== 'undefined' && tapSlug) {
+                    const activeIndex = serverData.findIndex(ep => ep.slug === tapSlug);
+                    if (activeIndex !== -1) activeChunk = Math.floor(activeIndex / CHUNK_SIZE);
+                }
+
+                const totalChunks = Math.ceil(serverData.length / CHUNK_SIZE);
+                
+                // Mã HTML của Thanh Tab (Vuốt ngang)
+                let rangeHTML = `<div class="ep-tabs-wrapper" style="display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; -ms-overflow-style: none;">`;
+                for (let i = 0; i < totalChunks; i++) {
+                    const start = i * CHUNK_SIZE + 1;
+                    const end = Math.min((i + 1) * CHUNK_SIZE, serverData.length);
+                    const bg = i === activeChunk ? '#ffda76' : '#2a2a2f';
+                    const color = i === activeChunk ? '#000' : '#fff';    
+                    rangeHTML += `<button class="ep-tab-btn" onclick="changeEpChunk(${i}, '${movieSlug}', ${currentServerIdx})" style="background: ${bg}; color: ${color}; border: 1px solid #444; padding: 6px 15px; border-radius: 4px; cursor: pointer; white-space: nowrap; font-size: 13px; font-weight: bold; transition: 0.2s; flex: 0 0 auto;">Tập ${start}-${end}</button>`;
+                }
+                rangeHTML += `</div>`;
+                
+                // Khung chứa lưới nút tập phim
+                rangeHTML += `<div id="ep-buttons-container"></div>`;
+                epListDiv.innerHTML = rangeHTML;
+
+                // Đổ dữ liệu 100 tập vào khung
+                const container = document.getElementById('ep-buttons-container');
+                renderChunk(activeChunk * CHUNK_SIZE, Math.min((activeChunk + 1) * CHUNK_SIZE, serverData.length), movieSlug, currentServerIdx, container);
+            }
         }
 
+        window.changeEpChunk = function(chunkIndex, movieSlug, currentServerIdx) {
+            const tabs = document.querySelectorAll('.ep-tab-btn');
+            tabs.forEach((tab, i) => {
+                tab.style.background = (i === chunkIndex) ? '#ffda76' : '#2a2a2f';
+                tab.style.color = (i === chunkIndex) ? '#000' : '#fff';
+            });
+            const container = document.getElementById('ep-buttons-container');
+            container.innerHTML = '';
+            renderChunk(chunkIndex * CHUNK_SIZE, Math.min((chunkIndex + 1) * CHUNK_SIZE, currentServerEpisodes.length), movieSlug, currentServerIdx, container);
+        }
+
+        function renderChunk(startIndex, endIndex, movieSlug, currentServerIdx, container) {
+            // Ép CSS Grid thông minh: Máy to hiển thị nhiều ô, điện thoại nhỏ tự động ép thành 3-4 ô
+            container.style.display = "grid";
+            container.style.gridTemplateColumns = "repeat(auto-fill, minmax(80px, 1fr))";
+            container.style.gap = "8px";
+
+            for (let i = startIndex; i < endIndex; i++) {
+                const ep = currentServerEpisodes[i];
+                const currentTapSlug = typeof tapSlug !== 'undefined' ? tapSlug : '';
+                const isActive = ep.slug === currentTapSlug; 
+                
+                const btn = document.createElement('button');
+                btn.style.padding = "10px 5px";
+                btn.style.background = isActive ? "#ffda76" : "#2a2a2f";
+                btn.style.color = isActive ? "#000" : "#fff";
+                btn.style.border = "none";
+                btn.style.borderRadius = "4px";
+                btn.style.cursor = "pointer";
+                btn.style.fontWeight = isActive ? "bold" : "normal";
+                btn.style.fontSize = "13px";
+                btn.style.width = "100%"; // Ép nút giãn đều theo ô của Grid
+                btn.innerText = ep.name;
+                
+                btn.onclick = () => window.location.href = `watch.html?slug=${movieSlug}&server=${currentServerIdx}&tap=${ep.slug}`;
+                container.appendChild(btn);
+            }
+        }
+
+        // ==========================================
+        // 3. TRÌNH PHÁT VIDEO M3U8
+        // ==========================================
         function playVideoM3U8(url) {
             if (window.hls) window.hls.destroy();
             if (window.player) window.player.destroy();
@@ -233,14 +302,13 @@
         }
 
         // ==========================================
-        // 2. TẠO KHUNG BÌNH LUẬN (CHỈ VẼ KHUNG, KHÔNG DÍNH DÁNG ĐẾN HEADER)
+        // 4. HỆ THỐNG BÌNH LUẬN
         // ==========================================
         function renderCommentBox() {
             const commentFormArea = document.getElementById('comment-form-area');
             const username = sessionStorage.getItem('username');
             
             if (username && commentFormArea) {
-                // Lấy thông tin có sẵn trong máy do loadHeader.js đã lưu
                 const avatarSrc = sessionStorage.getItem('userAvatar') || 'https://i.pravatar.cc/150?img=11';
                 const displayName = sessionStorage.getItem('displayName') || username; 
                 
@@ -266,7 +334,9 @@
             const username = sessionStorage.getItem('username');
             const fullName = sessionStorage.getItem('displayName') || username; 
             const avatar = sessionStorage.getItem('userAvatar') || 'https://i.pravatar.cc/150?img=11';
+
             if (!content.trim()) return;
+
             try {
                 const res = await fetch(`https://dluaphim-api.onrender.com/api/movies/${slug}/comments`, {
                     method: 'POST',
@@ -292,19 +362,22 @@
 
                 const parents = comments.filter(c => !c.parentId);
                 const replies = comments.filter(c => c.parentId);
+
                 listDiv.innerHTML = '';
                 
                 parents.forEach(cmt => {
                     const date = new Date(cmt.createdAt).toLocaleString('vi-VN');
                     const displayCmtName = cmt.fullName || cmt.username; 
+                    
                     const childReplies = replies.filter(r => r.parentId === cmt._id);
                     let repliesHtml = '';
                     
                     childReplies.forEach(reply => {
                         const rDate = new Date(reply.createdAt).toLocaleString('vi-VN');
                         const displayRepName = reply.fullName || reply.username;
+                        
                         repliesHtml += `
-                            <div id="comment-${reply._id}" style="display: flex; gap: 10px; margin-top: 15px; margin-left: 50px; background: #1c1c1f; padding: 10px; border-radius: 8px; border-left: 2px solid #555;">
+                            <div id="comment-${reply._id}" style="display: flex; gap: 10px; margin-top: 15px; margin-left: 50px; background: #1c1c1f; padding: 10px; border-radius: 8px; border-left: 2px solid #555; transition: 1s;">
                                 <img src="${reply.avatar}" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover;">
                                 <div style="flex: 1;">
                                     <h4 style="margin: 0; color: #fff; font-size: 14px;">${displayRepName} <span style="color: #888; font-size: 11px; margin-left: 10px;">🕒 ${rDate}</span></h4>
@@ -318,7 +391,7 @@
 
                     listDiv.innerHTML += `
                         <div style="margin-bottom: 25px;">
-                            <div id="comment-${cmt._id}" style="display: flex; gap: 15px; background: #2a2a2f; padding: 15px; border-radius: 8px; border-left: 3px solid #ffda76;">
+                            <div id="comment-${cmt._id}" style="display: flex; gap: 15px; background: #2a2a2f; padding: 15px; border-radius: 8px; border-left: 3px solid #ffda76; transition: 1s;">
                                 <img src="${cmt.avatar}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 1px solid #444;">
                                 <div style="flex: 1;">
                                     <h4 style="margin: 0; color: #fff; font-size: 15px;">${displayCmtName} <span style="color: #888; font-size: 12px; font-weight: normal; margin-left: 10px;">🕒 ${date}</span></h4>
@@ -358,16 +431,12 @@
             document.getElementById(`reply-input-${parentId}`).focus();
         }
 
-        // =========================================================
-        // KHỞI CHẠY (CHỈ CHẠY CÁC HÀM CỦA PHIM)
-        // =========================================================
         document.addEventListener("DOMContentLoaded", () => {
             loadMovieDetail();
-            renderCommentBox(); // Tự vẽ khung bình luận
+            renderCommentBox();
             loadComments();
         });
 
-        // CẢM BIẾN XOAY MÀN HÌNH TỰ ĐỘNG FULLSCREEN
         window.addEventListener("orientationchange", function() {
             setTimeout(() => {
                 let angle = (window.screen && window.screen.orientation) ? window.screen.orientation.angle : window.orientation;
