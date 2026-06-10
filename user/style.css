@@ -711,3 +711,18 @@ body {
         font-size: 16px !important; /* Ép 16px để iPhone không bị zoom cận mặt khi bấm gõ phím */
     }
 }
+/* Tùy chỉnh thanh cuộn ngang cho các Tab tập phim */
+.ep-tabs-wrapper::-webkit-scrollbar {
+    height: 6px; /* Độ dày của thanh cuộn */
+}
+.ep-tabs-wrapper::-webkit-scrollbar-track {
+    background: #1c1c1f; /* Màu nền của rãnh cuộn */
+    border-radius: 4px;
+}
+.ep-tabs-wrapper::-webkit-scrollbar-thumb {
+    background: #444; /* Màu của thanh trượt */
+    border-radius: 4px;
+}
+.ep-tabs-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #ffda76; /* Hover chuột vào sẽ sáng màu vàng */
+}

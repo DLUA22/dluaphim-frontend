@@ -123,7 +123,7 @@ function renderEpisodeButtons(serverData, movieSlug, currentServerIdx) {
         epListDiv.appendChild(container);
         renderChunk(0, serverData.length, movieSlug, currentServerIdx, container);
     } else {
-        let rangeHTML = `<div class="ep-tabs-wrapper" style="display: flex; flex-wrap: nowrap; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; -ms-overflow-style: none; width: 100%;">`;
+        let rangeHTML = `<div class="ep-tabs-wrapper" style="display: flex; flex-wrap: nowrap; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 10px; width: 100%;">`;
         const totalChunks = Math.ceil(serverData.length / CHUNK_SIZE);
         
         for (let i = 0; i < totalChunks; i++) {
