@@ -193,7 +193,7 @@
                     if (activeIndex !== -1) activeChunk = Math.floor(activeIndex / CHUNK_SIZE);
                 }
                 const totalChunks = Math.ceil(serverData.length / CHUNK_SIZE);
-                let rangeHTML = `<div class="ep-tabs-wrapper" style="display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 8px; padding-right: 20px; box-sizing: border-box; width: 100%; scrollbar-width: none; -ms-overflow-style: none;">`;     
+                let rangeHTML = `<div class="ep-tabs-wrapper" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; width: 100%;">`;
                 for (let i = 0; i < totalChunks; i++) {
                     const start = i * CHUNK_SIZE + 1;
                     const end = Math.min((i + 1) * CHUNK_SIZE, serverData.length);

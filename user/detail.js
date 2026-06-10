@@ -124,9 +124,8 @@ function renderEpisodeButtons(serverData, movieSlug, currentServerIdx) {
         renderChunk(0, serverData.length, movieSlug, currentServerIdx, container);
     } else {
         // Có thêm padding-right: 20px để fix lẹm nút như bên watch.html
-        let rangeHTML = `<div class="ep-tabs-wrapper" style="display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 8px; padding-right: 20px; box-sizing: border-box; width: 100%; scrollbar-width: none; -ms-overflow-style: none;">`;
+        let rangeHTML = `<div class="ep-tabs-wrapper" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; width: 100%;">`;
         const totalChunks = Math.ceil(serverData.length / CHUNK_SIZE);
-        
         for (let i = 0; i < totalChunks; i++) {
             const start = i * CHUNK_SIZE + 1;
             const end = Math.min((i + 1) * CHUNK_SIZE, serverData.length);
