@@ -2,6 +2,11 @@ const urlParams = new URLSearchParams(window.location.search);
 const slug = urlParams.get("slug");
 let globalMovieData = null; 
 
+if (!slug) window.location.href = 'index.html';
+
+// ==========================================
+// 1. TẢI CHI TIẾT PHIM
+// ==========================================
 async function loadMovieDetail() {
     try {
         const response = await fetch(`https://phimapi.com/phim/${slug}`);
@@ -11,41 +16,65 @@ async function loadMovieDetail() {
             const movie = data.movie;
             globalMovieData = data; 
 
-            document.getElementById("d-backdrop").style.backgroundImage = `url('${movie.poster_url}')`;
-            document.getElementById("d-poster").src = movie.thumb_url;
-            document.getElementById("d-name").innerText = movie.name;
-            document.getElementById("d-origin-name").innerText = movie.origin_name;
+            const backdropEl = document.getElementById("d-backdrop");
+            if (backdropEl) backdropEl.style.backgroundImage = `url('${movie.poster_url}')`;
+
+            const posterEl = document.getElementById("d-poster");
+            if (posterEl) posterEl.src = movie.thumb_url;
+
+            const titleEl = document.getElementById("d-name");
+            if (titleEl) titleEl.innerText = movie.name;
+
+            const originEl = document.getElementById("d-origin-name");
+            if (originEl) originEl.innerText = movie.origin_name;
             
-            document.getElementById("d-quality").innerText = movie.quality + ' ' + movie.lang;
-            document.getElementById("d-year").innerText = movie.year;
-            document.getElementById("d-time").innerText = movie.time;
-            document.getElementById("d-status").innerText = movie.episode_current;
+            const qualityEl = document.getElementById("d-quality");
+            if (qualityEl) qualityEl.innerText = movie.quality + ' ' + movie.lang;
+
+            const yearEl = document.getElementById("d-year");
+            if (yearEl) yearEl.innerText = movie.year;
+
+            const timeEl = document.getElementById("d-time");
+            if (timeEl) timeEl.innerText = movie.time;
+
+            const statusEl = document.getElementById("d-status");
+            if (statusEl) statusEl.innerText = movie.episode_current;
             
             let genresHtml = '';
-            movie.category.forEach(cat => genresHtml += `<span>${cat.name}</span>`);
-            document.getElementById("d-genres").innerHTML = genresHtml;
-            document.getElementById("d-content").innerHTML = movie.content;
+            if (movie.category) {
+                movie.category.forEach(cat => genresHtml += `<span>${cat.name}</span>`);
+            }
+            const genreEl = document.getElementById("d-genres");
+            if (genreEl) genreEl.innerHTML = genresHtml;
+
+            const contentEl = document.getElementById("d-content");
+            if (contentEl) contentEl.innerHTML = movie.content || 'Chưa có thông tin.';
+
             document.title = `${movie.name} - DLUAPHIM`;
 
             const episodes = data.episodes; 
             if (episodes && episodes.length > 0) {
                 renderServers(episodes, slug);
-                renderEpisodes(episodes[0].server_data, slug, 0); 
+                renderEpisodeButtons(episodes[0].server_data, slug, 0); 
             }
 
-            document.getElementById("btn-play-now").addEventListener("click", () => {
-                if(episodes.length > 0 && episodes[0].server_data.length > 0) {
-                    const firstEpSlug = episodes[0].server_data[0].slug;
-                    window.location.href = `watch.html?slug=${slug}&server=0&tap=${firstEpSlug}`;
-                }
-            });
+            const playBtn = document.getElementById("btn-play-now");
+            if (playBtn) {
+                playBtn.addEventListener("click", () => {
+                    if(episodes.length > 0 && episodes[0].server_data.length > 0) {
+                        const firstEpSlug = episodes[0].server_data[0].slug;
+                        window.location.href = `watch.html?slug=${slug}&server=0&tap=${firstEpSlug}`;
+                    }
+                });
+            }
         }
     } catch (error) { console.error("Lỗi:", error); }
 }
 
 function renderServers(episodesArray, movieSlug) {
     const serverListDiv = document.getElementById("server-list");
-    let html = '<strong style="margin-right: 15px;">Mạng:</strong>';
+    if(!serverListDiv) return;
+    let html = '<strong style="margin-right: 15px; color: white;">Mạng:</strong>';
     episodesArray.forEach((serverItem, index) => {
         const activeClass = index === 0 ? 'active' : ''; 
         html += `<button class="server-btn ${activeClass}" onclick="changeServer(${index}, '${movieSlug}')">📺 ${serverItem.server_name}</button>`;
@@ -56,31 +85,112 @@ function renderServers(episodesArray, movieSlug) {
 window.changeServer = function(serverIndex, movieSlug) {
     const btns = document.querySelectorAll('.server-btn');
     btns.forEach((btn, idx) => {
-        if(idx === serverIndex) btn.classList.add('active');
-        else btn.classList.remove('active');
+        if(idx === serverIndex) {
+            btn.classList.add('active');
+            btn.style.background = "rgba(255, 218, 118, 0.1)";
+            btn.style.color = "#ffda76";
+            btn.style.borderColor = "#ffda76";
+        } else {
+            btn.classList.remove('active');
+            btn.style.background = "#252730";
+            btn.style.color = "#aaa";
+            btn.style.borderColor = "#444";
+        }
     });
 
     if(globalMovieData) {
         const selectedServerData = globalMovieData.episodes[serverIndex].server_data;
-        renderEpisodes(selectedServerData, movieSlug, serverIndex);
+        renderEpisodeButtons(selectedServerData, movieSlug, serverIndex);
     }
 }
 
-function renderEpisodes(serverData, movieSlug, serverIndex) {
-    const epGrid = document.getElementById("episode-grid");
-    epGrid.innerHTML = ''; 
-    serverData.forEach(ep => {
-        const linkWatch = `watch.html?slug=${movieSlug}&server=${serverIndex}&tap=${ep.slug}`;
-        epGrid.innerHTML += `<button class="ep-btn" onclick="window.location.href='${linkWatch}'">▶ ${ep.name}</button>`;
-    });
+// ==========================================
+// 2. TẠO TAB VÀ LƯỚI TẬP PHIM (CHO TRANG DETAIL)
+// ==========================================
+let currentServerEpisodes = []; 
+const CHUNK_SIZE = 100;
+
+function renderEpisodeButtons(serverData, movieSlug, currentServerIdx) {
+    currentServerEpisodes = serverData; 
+    const epListDiv = document.getElementById("episode-grid");
+    if(!epListDiv) return;
+    
+    epListDiv.innerHTML = ''; 
+    epListDiv.style.display = "block"; // Ép thành block để không bị hỏng thẻ Tab
+
+    if (serverData.length <= CHUNK_SIZE) {
+        const container = document.createElement('div');
+        epListDiv.appendChild(container);
+        renderChunk(0, serverData.length, movieSlug, currentServerIdx, container);
+    } else {
+        // Có thêm padding-right: 20px để fix lẹm nút như bên watch.html
+        let rangeHTML = `<div class="ep-tabs-wrapper" style="display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 8px; padding-right: 20px; box-sizing: border-box; width: 100%; scrollbar-width: none; -ms-overflow-style: none;">`;
+        const totalChunks = Math.ceil(serverData.length / CHUNK_SIZE);
+        
+        for (let i = 0; i < totalChunks; i++) {
+            const start = i * CHUNK_SIZE + 1;
+            const end = Math.min((i + 1) * CHUNK_SIZE, serverData.length);
+            const bg = i === 0 ? '#ffda76' : '#2a2a2f'; // Mặc định mở Tab 1
+            const color = i === 0 ? '#000' : '#fff';    
+            rangeHTML += `<button class="ep-tab-btn" onclick="changeEpChunk(${i}, '${movieSlug}', ${currentServerIdx})" style="background: ${bg}; color: ${color}; border: 1px solid #444; padding: 6px 15px; border-radius: 4px; cursor: pointer; white-space: nowrap; font-size: 13px; font-weight: bold; transition: 0.2s; flex: 0 0 auto;">Tập ${start}-${end}</button>`;
+        }
+        rangeHTML += `</div>`;
+        rangeHTML += `<div id="ep-buttons-container"></div>`;
+
+        epListDiv.innerHTML = rangeHTML;
+        const container = document.getElementById('ep-buttons-container');
+        renderChunk(0, Math.min(CHUNK_SIZE, serverData.length), movieSlug, currentServerIdx, container);
+    }
 }
 
+window.changeEpChunk = function(chunkIndex, movieSlug, currentServerIdx) {
+    const tabs = document.querySelectorAll('.ep-tab-btn');
+    tabs.forEach((tab, i) => {
+        tab.style.background = (i === chunkIndex) ? '#ffda76' : '#2a2a2f';
+        tab.style.color = (i === chunkIndex) ? '#000' : '#fff';
+    });
+    const container = document.getElementById('ep-buttons-container');
+    container.innerHTML = '';
+    renderChunk(chunkIndex * CHUNK_SIZE, Math.min((chunkIndex + 1) * CHUNK_SIZE, currentServerEpisodes.length), movieSlug, currentServerIdx, container);
+}
+
+function renderChunk(startIndex, endIndex, movieSlug, currentServerIdx, container) {
+    // Ép CSS Grid thông minh cho các nút tập phim
+    container.style.display = "grid";
+    container.style.gridTemplateColumns = "repeat(auto-fill, minmax(80px, 1fr))";
+    container.style.gap = "8px";
+
+    for (let i = startIndex; i < endIndex; i++) {
+        const ep = currentServerEpisodes[i];
+        
+        const btn = document.createElement('button');
+        btn.style.padding = "10px 5px";
+        btn.style.background = "#252730";
+        btn.style.color = "#fff";
+        btn.style.border = "none";
+        btn.style.borderRadius = "4px";
+        btn.style.cursor = "pointer";
+        btn.style.fontSize = "13px";
+        btn.style.width = "100%";
+        btn.innerText = ep.name;
+        
+        // Hiệu ứng hover cho nút
+        btn.onmouseover = () => { btn.style.background = "#ffda76"; btn.style.color = "#000"; btn.style.fontWeight = "bold"; };
+        btn.onmouseout = () => { btn.style.background = "#252730"; btn.style.color = "#fff"; btn.style.fontWeight = "normal"; };
+        
+        btn.onclick = () => window.location.href = `watch.html?slug=${movieSlug}&server=${currentServerIdx}&tap=${ep.slug}`;
+        container.appendChild(btn);
+    }
+}
+
+// ==========================================
+// 3. HỆ THỐNG BÌNH LUẬN (DÀNH CHO DETAIL)
+// ==========================================
 function renderCommentBox() {
     const commentFormArea = document.getElementById('comment-form-area');
     const username = sessionStorage.getItem('username');
     
     if (username && commentFormArea) {
-        // Lấy thông tin có sẵn trong máy do loadHeader.js đã lưu
         const avatarSrc = sessionStorage.getItem('userAvatar') || 'https://i.pravatar.cc/150?img=11';
         const displayName = sessionStorage.getItem('displayName') || username; 
         
@@ -99,13 +209,8 @@ function renderCommentBox() {
     }
 }
 
-window.submitComment = async function() {
-    sendCommentData(document.getElementById('comment-input').value, null, null);
-};
-
-window.submitReply = async function(parentId, replyToUsername) {
-    sendCommentData(document.getElementById(`reply-input-${parentId}`).value, parentId, replyToUsername);
-};
+window.submitComment = async function() { sendCommentData(document.getElementById('comment-input').value, null, null); };
+window.submitReply = async function(parentId, replyToUsername) { sendCommentData(document.getElementById(`reply-input-${parentId}`).value, parentId, replyToUsername); };
 
 async function sendCommentData(content, parentId, replyToUsername) {
     const username = sessionStorage.getItem('username');
@@ -130,9 +235,13 @@ async function loadComments() {
         const comments = await res.json();
         
         const listDiv = document.getElementById('comments-list');
+        if(!listDiv) return;
+
         if (!Array.isArray(comments)) return;
         
-        document.getElementById('comment-count').innerText = comments.length || 0;
+        const countEl = document.getElementById('comment-count');
+        if(countEl) countEl.innerText = comments.length || 0;
+
         if(comments.length === 0) {
             listDiv.innerHTML = '<div style="color: #888; text-align: center;">Chưa có bình luận nào!</div>';
             return;
@@ -211,10 +320,6 @@ window.showReplyForm = function(parentId, replyToUsername, displayCmtName) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    if (!slug) {
-        window.location.href = "index.html";
-        return;
-    }
     loadMovieDetail();
     renderCommentBox();
     loadComments();

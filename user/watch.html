@@ -179,27 +179,21 @@
             const epListDiv = document.getElementById("episode-list");
             if(!epListDiv) return;
             
-            // Xóa sạch CSS cũ đang bị dính Grid của người dùng
             epListDiv.innerHTML = ''; 
-            epListDiv.style.display = "block"; // Ép thành block để không bị hỏng thẻ Tab
+            epListDiv.style.display = "block"; 
 
             if (serverData.length <= CHUNK_SIZE) {
-                // Nếu phim ngắn -> Tạo thẳng khung chứa lưới phim
                 const container = document.createElement('div');
                 epListDiv.appendChild(container);
                 renderChunk(0, serverData.length, movieSlug, currentServerIdx, container);
             } else {
-                // Nếu phim dài -> Tạo thanh Tab và Khung chứa lưới phim
                 let activeChunk = 0;
                 if (typeof tapSlug !== 'undefined' && tapSlug) {
                     const activeIndex = serverData.findIndex(ep => ep.slug === tapSlug);
                     if (activeIndex !== -1) activeChunk = Math.floor(activeIndex / CHUNK_SIZE);
                 }
-
                 const totalChunks = Math.ceil(serverData.length / CHUNK_SIZE);
-                
-                // Mã HTML của Thanh Tab (Vuốt ngang)
-                let rangeHTML = `<div class="ep-tabs-wrapper" style="display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; -ms-overflow-style: none;">`;
+                let rangeHTML = `<div class="ep-tabs-wrapper" style="display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 8px; padding-right: 20px; box-sizing: border-box; width: 100%; scrollbar-width: none; -ms-overflow-style: none;">`;     
                 for (let i = 0; i < totalChunks; i++) {
                     const start = i * CHUNK_SIZE + 1;
                     const end = Math.min((i + 1) * CHUNK_SIZE, serverData.length);
@@ -208,12 +202,8 @@
                     rangeHTML += `<button class="ep-tab-btn" onclick="changeEpChunk(${i}, '${movieSlug}', ${currentServerIdx})" style="background: ${bg}; color: ${color}; border: 1px solid #444; padding: 6px 15px; border-radius: 4px; cursor: pointer; white-space: nowrap; font-size: 13px; font-weight: bold; transition: 0.2s; flex: 0 0 auto;">Tập ${start}-${end}</button>`;
                 }
                 rangeHTML += `</div>`;
-                
-                // Khung chứa lưới nút tập phim
                 rangeHTML += `<div id="ep-buttons-container"></div>`;
                 epListDiv.innerHTML = rangeHTML;
-
-                // Đổ dữ liệu 100 tập vào khung
                 const container = document.getElementById('ep-buttons-container');
                 renderChunk(activeChunk * CHUNK_SIZE, Math.min((activeChunk + 1) * CHUNK_SIZE, serverData.length), movieSlug, currentServerIdx, container);
             }
