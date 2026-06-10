@@ -112,30 +112,43 @@ const CHUNK_SIZE = 100;
 
 function renderEpisodeButtons(serverData, movieSlug, currentServerIdx) {
     currentServerEpisodes = serverData; 
-    const epListDiv = document.getElementById("episode-grid");
+    const epListDiv = document.getElementById("episode-grid") || document.getElementById("episode-list");
     if(!epListDiv) return;
     
     epListDiv.innerHTML = ''; 
-    epListDiv.style.display = "block"; 
+    // Ép khung cha giữ chuẩn form, không bị tràn
+    epListDiv.style.display = "block";
+    epListDiv.style.maxWidth = "100%";
 
     if (serverData.length <= CHUNK_SIZE) {
         const container = document.createElement('div');
         epListDiv.appendChild(container);
         renderChunk(0, serverData.length, movieSlug, currentServerIdx, container);
     } else {
-        let rangeHTML = `<div class="ep-tabs-wrapper" style="display: flex; flex-wrap: nowrap; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 10px; width: 100%;">`;
+        let activeChunk = 0;
+        if (typeof tapSlug !== 'undefined' && tapSlug) {
+            const activeIndex = serverData.findIndex(ep => ep.slug === tapSlug);
+            if (activeIndex !== -1) activeChunk = Math.floor(activeIndex / CHUNK_SIZE);
+        }
+
         const totalChunks = Math.ceil(serverData.length / CHUNK_SIZE);
+        
+        // Tạo thanh Tab vuốt ngang
+        let rangeHTML = `<div class="ep-tabs-wrapper" style="display: flex; flex-wrap: nowrap; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 10px; width: 100%;">`;
         
         for (let i = 0; i < totalChunks; i++) {
             const start = i * CHUNK_SIZE + 1;
             const end = Math.min((i + 1) * CHUNK_SIZE, serverData.length);
-            const bg = i === 0 ? '#ffda76' : '#2a2a2f'; 
-            const color = i === 0 ? '#000' : '#fff';    
+            const bg = i === activeChunk ? '#ffda76' : '#2a2a2f';
+            const color = i === activeChunk ? '#000' : '#fff';    
+            
             rangeHTML += `<button class="ep-tab-btn" onclick="changeEpChunk(${i}, '${movieSlug}', ${currentServerIdx})" style="background: ${bg}; color: ${color}; border: 1px solid #444; padding: 8px 15px; border-radius: 4px; cursor: pointer; white-space: nowrap; font-size: 13px; font-weight: bold; transition: 0.2s; flex: 0 0 auto;">Tập ${start}-${end}</button>`;
         }
         rangeHTML += `</div><div id="ep-buttons-container"></div>`;
-
+        
         epListDiv.innerHTML = rangeHTML;
+
+        // Ma thuật: Click giữ chuột để lướt ngang trên Laptop/PC
         const slider = epListDiv.querySelector('.ep-tabs-wrapper');
         let isDown = false; let startX; let scrollLeft;
         slider.addEventListener('mousedown', (e) => {
@@ -149,11 +162,12 @@ function renderEpisodeButtons(serverData, movieSlug, currentServerIdx) {
             if (!isDown) return;
             e.preventDefault();
             const x = e.pageX - slider.offsetLeft;
-            const walk = (x - startX) * 1.5; 
+            const walk = (x - startX) * 1.5; // Tốc độ trượt
             slider.scrollLeft = scrollLeft - walk;
         });
+
         const container = document.getElementById('ep-buttons-container');
-        renderChunk(0, Math.min(CHUNK_SIZE, serverData.length), movieSlug, currentServerIdx, container);
+        renderChunk(activeChunk * CHUNK_SIZE, Math.min((activeChunk + 1) * CHUNK_SIZE, serverData.length), movieSlug, currentServerIdx, container);
     }
 }
 
@@ -169,34 +183,32 @@ window.changeEpChunk = function(chunkIndex, movieSlug, currentServerIdx) {
 }
 
 function renderChunk(startIndex, endIndex, movieSlug, currentServerIdx, container) {
-    // Ép CSS Grid thông minh cho các nút tập phim
+    // Khung lưới hiển thị tập phim bên dưới
     container.style.display = "grid";
     container.style.gridTemplateColumns = "repeat(auto-fill, minmax(80px, 1fr))";
     container.style.gap = "8px";
 
     for (let i = startIndex; i < endIndex; i++) {
         const ep = currentServerEpisodes[i];
+        const currentTapSlug = typeof tapSlug !== 'undefined' ? tapSlug : '';
+        const isActive = ep.slug === currentTapSlug; 
         
         const btn = document.createElement('button');
         btn.style.padding = "10px 5px";
-        btn.style.background = "#252730";
-        btn.style.color = "#fff";
+        btn.style.background = isActive ? "#ffda76" : "#2a2a2f";
+        btn.style.color = isActive ? "#000" : "#fff";
         btn.style.border = "none";
         btn.style.borderRadius = "4px";
         btn.style.cursor = "pointer";
+        btn.style.fontWeight = isActive ? "bold" : "normal";
         btn.style.fontSize = "13px";
         btn.style.width = "100%";
         btn.innerText = ep.name;
-        
-        // Hiệu ứng hover cho nút
-        btn.onmouseover = () => { btn.style.background = "#ffda76"; btn.style.color = "#000"; btn.style.fontWeight = "bold"; };
-        btn.onmouseout = () => { btn.style.background = "#252730"; btn.style.color = "#fff"; btn.style.fontWeight = "normal"; };
         
         btn.onclick = () => window.location.href = `watch.html?slug=${movieSlug}&server=${currentServerIdx}&tap=${ep.slug}`;
         container.appendChild(btn);
     }
 }
-
 // ==========================================
 // 3. HỆ THỐNG BÌNH LUẬN (DÀNH CHO DETAIL)
 // ==========================================

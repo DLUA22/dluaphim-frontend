@@ -726,3 +726,13 @@ body {
 .ep-tabs-wrapper::-webkit-scrollbar-thumb:hover {
     background: #ffda76; /* Hover chuột vào sẽ sáng màu vàng */
 }
+/* Chống tràn giao diện làm web bị giãn lố ra ngoài màn hình */
+.watch-left, .detail-right, .box-section {
+    min-width: 0;
+}
+
+/* Định dạng thanh cuộn ngang mỏng đẹp cho Tab */
+.ep-tabs-wrapper::-webkit-scrollbar { height: 6px; }
+.ep-tabs-wrapper::-webkit-scrollbar-track { background: #1c1c1f; border-radius: 4px; }
+.ep-tabs-wrapper::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+.ep-tabs-wrapper::-webkit-scrollbar-thumb:hover { background: #ffda76; }
