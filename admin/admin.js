@@ -257,7 +257,7 @@ async function importSelectedMovies() {
             if(res.ok) successCount++;
         } catch(e) { console.error("Lỗi cào phim", slug); }
     }
-    
+    sessionStorage.removeItem('dluaphim_allMovies');
     alert(`Đã cào thành công ${successCount}/${checkboxes.length} phim được chọn!`);
     loadMoviesToTable();
 }
@@ -318,5 +318,26 @@ async function syncAllMovies() {
         btn.style.background = '#00d2ff';
     }
 }
+async function loadPlayerSetting() {
+    try {
+        const res = await fetch('https://dluaphim-api.onrender.com/api/settings/player');
+        const data = await res.json();
+        
+        const checkbox = document.getElementById('player-toggle');
+        const statusText = document.getElementById('player-status-text');
+        
+        if (checkbox && statusText) {
+            checkbox.checked = data.enabled; // Cập nhật đúng trạng thái
+            if (data.enabled) {
+                statusText.innerText = "Hoạt Động";
+                statusText.style.color = "#28a745";
+            } else {
+                statusText.innerText = "Đang Tắt";
+                statusText.style.color = "#ff5555";
+            }
+        }
+    } catch(e) { console.log("Lỗi tải cài đặt"); }
+}
 // Chạy lần đầu khi load trang
+loadPlayerSetting();
 loadMoviesToTable();

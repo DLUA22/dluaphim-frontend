@@ -273,7 +273,23 @@ function renderChunk(startIndex, endIndex, movieSlug, currentServerIdx, containe
         // ==========================================
         // 3. TRÌNH PHÁT VIDEO M3U8
         // ==========================================
-        function playVideoM3U8(url) {
+        async function playVideoM3U8(url) {
+            try {
+                const settingRes = await fetch('https://dluaphim-api.onrender.com/api/settings/player');
+                const setting = await settingRes.json();
+                
+                // Nếu Admin đã tắt server
+                if (setting.enabled === false) {
+                    const playerContainer = document.getElementById('player-container');
+                    playerContainer.innerHTML = `
+                        <div style="width:100%; height:400px; background:#111; display:flex; flex-direction:column; justify-content:center; align-items:center; border-radius:8px; border: 1px solid #444;">
+                            <h2 style="color:#ffda76; margin-bottom:10px;">⚠️ Hệ Thống Đang Nâng Cấp</h2>
+                            <p style="color:#aaa;">Server chiếu phim hiện đang tạm tắt để bảo trì. Vui lòng quay lại sau!</p>
+                        </div>
+                    `;
+                    return; // Dừng hàm ngay lập tức, không cho tải trình phát Video
+                }
+            } catch(e) { console.log("Lỗi check setting"); }
             if (window.hls) window.hls.destroy();
             if (window.player) window.player.destroy();
 
