@@ -270,7 +270,7 @@ async function togglePlayerServer() {
     const statusText = document.getElementById('player-status-text');
     
     try {
-        await fetch('https://dluaphim-api.onrender.com/api/settings/player', {
+        await fetch('https://dluaphim-api.onrender.com/api/movies/settings/player', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ enabled: isChecked })
@@ -320,7 +320,7 @@ async function syncAllMovies() {
 }
 async function loadPlayerSetting() {
     try {
-        const res = await fetch('https://dluaphim-api.onrender.com/api/settings/player');
+        const res = await fetch('https://dluaphim-api.onrender.com/api/movies/settings/player');
         const data = await res.json();
         
         const checkbox = document.getElementById('player-toggle');

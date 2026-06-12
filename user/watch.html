@@ -275,7 +275,7 @@ function renderChunk(startIndex, endIndex, movieSlug, currentServerIdx, containe
         // ==========================================
         async function playVideoM3U8(url) {
             try {
-                const settingRes = await fetch('https://dluaphim-api.onrender.com/api/settings/player');
+                const settingRes = await fetch('https://dluaphim-api.onrender.com/api/movies/settings/player');
                 const setting = await settingRes.json();
                 
                 // Nếu Admin đã tắt server
