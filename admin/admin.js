@@ -180,36 +180,114 @@ if (btnLeechGenre) {
     });
 }
 // ====================================================
-// TÍNH NĂNG 2: CÀO PHIM THEO TÊN (ĐOẠN NÀY BẠN BỊ THIẾU NÈ)
+// NÂNG CẤP 1: CÀO PHIM THEO TÊN (Tìm Nhiều Phim - Chọn Lọc)
 // ====================================================
 const btnLeechSearch = document.getElementById('btn-leech-search');
 if (btnLeechSearch) {
-    btnLeechSearch.addEventListener('click', async () => {
-        const keyword = prompt('Nhập tên phim bạn muốn tìm (Ví dụ: doraemon, deadpool, lật mặt...):');
+    btnLeechSearch.addEventListener('click', () => {
+        // Mở Modal
+        document.getElementById('scrape-modal').style.display = 'flex';
+        document.getElementById('scrape-results').innerHTML = '<p style="color:#888; text-align:center; padding: 20px;">Nhập từ khóa và bấm Tìm kiếm...</p>';
+        document.getElementById('scrape-keyword').value = '';
+        document.getElementById('scrape-keyword').focus();
+    });
+}
+
+// Gọi API KKPhim để tìm danh sách phim
+async function executeSearchToScrape() {
+    const kw = document.getElementById('scrape-keyword').value;
+    const resBox = document.getElementById('scrape-results');
+    
+    if(!kw.trim()) { alert("Vui lòng nhập tên phim!"); return; }
+    
+    resBox.innerHTML = '<p style="color:#ffda76; text-align:center; padding: 20px;">⏳ Đang tìm kiếm...</p>';
+    
+    try {
+        // Tìm kiếm với limit 20
+        const response = await fetch(`https://phimapi.com/v1/api/tim-kiem?keyword=${encodeURIComponent(kw)}&limit=20`);
+        const data = await response.json();
         
-        if (!keyword || keyword.trim() === '') return;
+        if (!data.data || !data.data.items || data.data.items.length === 0) {
+            resBox.innerHTML = `<p style="color:#ff5555; text-align:center; padding: 20px;">Không tìm thấy phim nào có tên "${kw}"</p>`;
+            return;
+        }
 
-        btnLeechSearch.innerText = '⏳ Đang tìm và tải...';
-        btnLeechSearch.disabled = true;
+        let html = '';
+        data.data.items.forEach(movie => {
+            // Hiển thị danh sách kết quả kèm checkbox. 
+            // Quan trọng: Sử dụng "slug" làm giá trị (value) của ô checkbox
+            html += `
+                <div style="display:flex; align-items:center; gap:15px; padding:10px; border-bottom:1px solid #444;">
+                    <input type="checkbox" class="scrape-checkbox" value="${movie.slug}" style="width:20px; height:20px; cursor:pointer;">
+                    <img src="https://phimimg.com/${movie.thumb_url}" style="width:50px; height:70px; object-fit:cover; border-radius:4px; border: 1px solid #666;">
+                    <div>
+                        <strong style="color:white; font-size:15px;">${movie.name}</strong><br>
+                        <small style="color:#aaa;">${movie.origin_name} (${movie.year})</small>
+                    </div>
+                </div>
+            `;
+        });
+        resBox.innerHTML = html;
+    } catch (e) {
+        resBox.innerHTML = '<p style="color:#ff5555; text-align:center; padding: 20px;">Lỗi kết nối tới KKPhim API!</p>';
+    }
+}
 
+// Xử lý gửi các phim đã tick chọn lên Backend
+async function importSelectedMovies() {
+    const checkboxes = document.querySelectorAll('.scrape-checkbox:checked');
+    if(checkboxes.length === 0) return alert("Vui lòng tick chọn ít nhất 1 phim!");
+    
+    document.getElementById('scrape-modal').style.display='none';
+    
+    let successCount = 0;
+    
+    // Gửi từng slug lên API cào phim (Do API hiện tại của bạn lấy 1 phim, ta gửi lần lượt)
+    for(let box of checkboxes) {
+        const slug = box.value;
         try {
-            const response = await fetch('https://dluaphim-api.onrender.com/api/movies/leech-search', {
+            // Lưu ý: API leech-search hiện tại của bạn đang nhận vào "keyword" là tên. 
+            // Để dùng với slug chính xác, bạn cần tạo thêm 1 API bên Backend nhận "slug" (xem mục 3 bên dưới)
+            const res = await fetch('https://dluaphim-api.onrender.com/api/movies/leech-by-slug', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ keyword: keyword })
+                body: JSON.stringify({ slug: slug })
             });
-            const data = await response.json();
             
-            alert(data.message); 
-            loadMoviesToTable(); 
-        } catch (error) {
-            alert('Lỗi khi gọi API tìm kiếm phim!');
-            console.error(error);
-        } finally {
-            btnLeechSearch.innerText = '🔍 Cào Phim Theo Tên';
-            btnLeechSearch.disabled = false;
+            if(res.ok) successCount++;
+        } catch(e) { console.error("Lỗi cào phim", slug); }
+    }
+    
+    alert(`Đã cào thành công ${successCount}/${checkboxes.length} phim được chọn!`);
+    loadMoviesToTable();
+}
+
+// ====================================================
+// NÂNG CẤP 2: CÔNG TẮC BẢO TRÌ SERVER VIDEO
+// ====================================================
+async function togglePlayerServer() {
+    const isChecked = document.getElementById('player-toggle').checked;
+    const statusText = document.getElementById('player-status-text');
+    
+    try {
+        await fetch('https://dluaphim-api.onrender.com/api/settings/player', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ enabled: isChecked })
+        });
+        
+        if (isChecked) {
+            statusText.innerText = "Hoạt Động";
+            statusText.style.color = "#28a745";
+            alert("Đã MỞ hệ thống phát video! Người dùng có thể xem phim bình thường.");
+        } else {
+            statusText.innerText = "Đang Tắt";
+            statusText.style.color = "#ff5555";
+            alert("Đã TẮT hệ thống phát video! Màn hình xem phim sẽ hiển thị thông báo bảo trì.");
         }
-    });
+    } catch(err) {
+        alert("Không thể lưu trạng thái. Kiểm tra Backend!");
+    }
 }
 async function syncAllMovies() {
     const btn = document.getElementById('btn-sync');
