@@ -293,29 +293,46 @@ async function syncAllMovies() {
     const btn = document.getElementById('btn-sync');
     const statusText = document.getElementById('sync-status');
     
-    // Hiệu ứng loading
+    // Khóa nút ngay lập tức
     btn.disabled = true;
-    btn.innerText = '⏳ Đang đồng bộ... Vui lòng không đóng trang';
+    btn.innerText = '⏳ Đang khởi động máy cày...';
     btn.style.background = '#555';
-    statusText.innerText = 'Quá trình này có thể mất 1-2 phút tùy số lượng phim...';
+    statusText.innerText = 'Đang kết nối Server...';
 
     try {
+        // Gửi lệnh kích hoạt chạy ngầm
         const response = await fetch('https://dluaphim-api.onrender.com/api/movies/sync-all', { method: 'POST' });
         const data = await response.json();
+        statusText.innerText = data.message;
+        const radarInterval = setInterval(async () => {
+            try {
+                const statusRes = await fetch('https://dluaphim-api.onrender.com/api/movies/sync-status');
+                const statusData = await statusRes.json();
+                
+                if (statusData.isSyncing) {
+                    btn.innerText = '⏳ Server đang cày ngầm... Vui lòng đợi!';
+                } else {
+                    // SERVER BÁO XONG -> TẮT RADAR
+                    clearInterval(radarInterval); 
+                    btn.disabled = false;
+                    btn.innerText = '▶ Bắt đầu đồng bộ tất cả';
+                    btn.style.background = '#00d2ff';
+                    statusText.innerText = `✅ Đã đồng bộ xong lúc ${new Date().toLocaleTimeString()}`;
+                    
+                    alert("🎉 Hệ thống đã đồng bộ toàn bộ phim xong xuôi!");
+                    loadMoviesToTable();
+                }
+            } catch (e) {
+                console.log("Radar mất kết nối...");
+            }
+        }, 5000);
 
-        alert(data.message); // Báo popup thành công
-        statusText.innerText = `✅ Đã xong lúc ${new Date().toLocaleTimeString()}`;
-        
-        // Load lại danh sách phim (Nếu bạn có hàm load phim ở admin thì gọi ở đây)
-        // loadAdminMovies(); 
     } catch (error) {
-        alert('Lỗi đồng bộ!');
-        statusText.innerText = '❌ Đồng bộ thất bại!';
-    } finally {
-        // Trả lại nút như cũ
+        alert('Lỗi không thể gửi lệnh đồng bộ!');
         btn.disabled = false;
         btn.innerText = '▶ Bắt đầu đồng bộ tất cả';
         btn.style.background = '#00d2ff';
+        statusText.innerText = '❌ Lỗi kết nối!';
     }
 }
 async function loadPlayerSetting() {
