@@ -726,6 +726,48 @@ body {
 .ep-tabs-wrapper::-webkit-scrollbar-thumb:hover {
     background: #ffda76; /* Hover chuột vào sẽ sáng màu vàng */
 }
+/* ========================================================= */
+/* 📺 CSS HỖ TRỢ ĐIỀU KHIỂN TRÊN SMART TV                    */
+/* ========================================================= */
+
+/* Nút tải App TV cạnh Phim Bộ */
+.btn-download-tv {
+    background: linear-gradient(135deg, #ffda76, #ffb700);
+    color: #000 !important; /* Ép chữ màu đen để nổi bật trên nền vàng */
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 13px !important;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    margin-left: 15px;
+    box-shadow: 0 4px 10px rgba(255, 204, 0, 0.3);
+    transition: 0.3s;
+}
+.btn-download-tv:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(255, 204, 0, 0.5);
+}
+
+/* Khung viền trắng bao quanh khi bấm các phím điều hướng trên Remote Tivi */
+a:focus, 
+button:focus, 
+input:focus, 
+.movie-card:focus,
+.ep-tab-btn:focus,
+.ep-btn:focus,
+.server-btn:focus,
+.episode-btn:focus {
+    outline: 4px solid #ffffff !important; /* Tạo ô trắng bao quanh phần tử */
+    outline-offset: 2px;
+    transform: scale(1.04) !important; /* Phóng to nhẹ để biết đang chọn ô này */
+    box-shadow: 0 10px 30px rgba(255, 255, 255, 0.4) !important;
+    z-index: 9999;
+    background-color: rgba(255, 218, 118, 0.25) !important;
+    transition: all 0.2s ease-in-out;
+}
+
 /* Chống tràn giao diện làm web bị giãn lố ra ngoài màn hình */
 .watch-left, .detail-right, .box-section {
     min-width: 0;

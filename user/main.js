@@ -77,7 +77,7 @@ function renderMovies(moviesArray, page = 1) {
             : 'border-color: #555; background-color: transparent;';
 
         const movieCard = `
-            <<div class="movie-card" tabindex="0" onclick="window.location.href='detail.html?slug=${movie.slug}'">
+            <div class="movie-card" tabindex="0" onclick="window.location.href='detail.html?slug=${movie.slug}'">
                 <div class="image-container">
                     <img src="${movie.thumbnail}" alt="${movie.title}" loading="lazy">
                     <div class="badge">${movie.status || 'Đang cập nhật'}</div>
