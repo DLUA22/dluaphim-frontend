@@ -835,3 +835,92 @@ input:focus,
         grid-template-areas: "logo search" !important;
     }
 }
+#df-messenger,
+.chatbot-container, 
+#chat-widget, 
+.ai-bot,
+iframe[src*="chat"] {
+    display: none !important;
+}
+/* ======================================================= */
+/* 📱 CHỈ ÁP DỤNG CHO MOBILE APP APK (CÓ CLASS .is-apk)    */
+/* ======================================================= */
+
+/* Mặc định ẩn giao diện App khi lướt Web bình thường */
+.app-top-tools, .mobile-bottom-nav {
+    display: none;
+}
+
+/* KÍCH HOẠT KHI VÀO APK TRÊN ĐIỆN THOẠI */
+@media screen and (max-width: 768px) {
+    
+    /* 1. Ẩn thanh Header gốc rườm rà của Web đi */
+    .is-apk .navbar {
+        display: none !important;
+    }
+
+    /* 2. Ép trang web dãn lề để nhường chỗ cho Top Tool và Bottom Menu */
+    .is-apk body {
+        padding-top: 60px !important;
+        padding-bottom: 70px !important;
+    }
+
+    /* 3. Hiện Thanh công cụ (Tìm kiếm, Phim lẻ, Phim bộ) ở trên cùng */
+    .is-apk .app-top-tools {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: fixed;
+        top: 0; left: 0; width: 100%;
+        background: rgba(22, 22, 26, 0.95);
+        backdrop-filter: blur(10px);
+        padding: 10px 15px;
+        z-index: 1000;
+        border-bottom: 1px solid #333;
+    }
+
+    .is-apk .app-search-mini {
+        display: flex; align-items: center; gap: 8px;
+        background: #25252b; padding: 6px 12px;
+        border-radius: 20px; flex: 1; margin-right: 15px;
+        color: #888; font-size: 13px; cursor: pointer;
+    }
+    .is-apk .app-search-mini svg { width: 16px; height: 16px; }
+    
+    /* Ô search gốc sẽ bị ẩn đi, chỉ hiện ra khi bấm vào app-search-mini (Sẽ viết JS sau) */
+    .is-apk .search-bar { display: none; } 
+
+    .is-apk .app-type-filters a {
+        color: #ccc; text-decoration: none; font-size: 13px;
+        font-weight: bold; margin-left: 10px;
+    }
+    .is-apk .app-type-filters a:hover { color: #ffda76; }
+
+    /* 4. Hiện Thanh Menu Sang trọng dưới đáy */
+    .is-apk .mobile-bottom-nav {
+        display: flex; position: fixed; bottom: 0; left: 0; width: 100%;
+        background-color: rgba(22, 22, 26, 0.98);
+        border-top: 1px solid #333; z-index: 9999;
+        justify-content: space-around; padding: 12px 0 8px 0;
+        padding-bottom: env(safe-area-inset-bottom, 12px);
+    }
+
+    .is-apk .nav-item {
+        display: flex; flex-direction: column; align-items: center;
+        text-decoration: none; color: #777; font-size: 11px;
+        font-weight: 500; gap: 4px; transition: 0.2s;
+    }
+
+    .is-apk .nav-item svg {
+        width: 24px; height: 24px; transition: 0.2s;
+    }
+
+    /* Hiệu ứng chọn nút (Vàng sáng lên) */
+    .is-apk .nav-item.active, .is-apk .nav-item:active {
+        color: #ffffff;
+    }
+    .is-apk .nav-item.active svg {
+        stroke: #ffda76; /* Đổi màu viền icon thành vàng */
+        transform: translateY(-2px);
+    }
+}

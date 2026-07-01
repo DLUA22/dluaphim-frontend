@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", function() {
                               (userAgent.includes('Build/'));
                               
             if (isWebView) {
+                document.body.classList.add('is-apk');
                 const downloadBtn = document.querySelector('.btn-download-tv');
                 if (downloadBtn) {
                     downloadBtn.style.display = 'none';
