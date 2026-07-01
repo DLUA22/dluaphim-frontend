@@ -290,7 +290,18 @@ a:focus, button:focus, input:focus, .movie-card:focus, .ep-tab-btn:focus, .ep-bt
         background: #0f0f11; padding: 0 15px; z-index: 1000;
     }
     .is-apk .hero-slider { margin-top: 60px !important; }
-    .is-apk .app-search-btn { cursor: pointer; padding: 10px; }
+    .is-apk .app-search-btn { 
+        cursor: pointer; 
+        padding: 10px; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+    }
+    .is-apk .app-search-btn svg { 
+        width: 24px !important;
+        height: 24px !important; 
+        stroke: white; 
+    }
     .is-apk .search-box-slide {
         position: fixed; top: 0; left: 0; width: 100%; height: 60px;
         background: #16161a; display: none; align-items: center; padding: 0 15px; z-index: 2000;
