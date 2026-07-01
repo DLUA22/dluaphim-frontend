@@ -21,30 +21,6 @@
         </div>
         <div id="pagination" class="pagination-container"></div>
     </main>
-    
-    <button id="btn-chatbot" onclick="toggleChat()" style="position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: #ffda76; border: none; font-size: 30px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 9999; transition: 0.3s;">🤖</button>
-
-    <div id="chat-window" style="display: none; position: fixed; bottom: 100px; right: 30px; width: 350px; height: 450px; background: #1c1c1f; border-radius: 12px; border: 1px solid #444; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 9999; display: flex; flex-direction: column; overflow: hidden;">
-        
-        <!-- Header -->
-        <div style="background: #2a2a2f; padding: 15px; border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center;">
-            <h4 style="margin: 0; color: #ffda76;">🤖 Trợ lý Phim AI</h4>
-            <span onclick="toggleChat()" style="cursor: pointer; color: #888;">✖</span>
-        </div>
-
-        <!-- Khung hiển thị tin nhắn -->
-        <div id="chat-messages" style="flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
-            <div style="background: #333; color: white; padding: 10px 15px; border-radius: 15px 15px 15px 0; max-width: 85%; align-self: flex-start; font-size: 14px;">
-                Chào bạn! Mình là AI của DLUAPHIM. Bạn đang buồn chán hay muốn bàn luận về điện ảnh, cứ hỏi mình nhé! 🍿
-            </div>
-        </div>
-
-        <!-- Ô nhập tin nhắn -->
-        <div style="padding: 10px; background: #2a2a2f; border-top: 1px solid #444; display: flex; gap: 10px;">
-            <input type="text" id="chat-input" placeholder="Nhập câu hỏi..." onkeypress="handleChatEnter(event)" style="flex: 1; padding: 10px; border-radius: 20px; border: none; background: #1c1c1f; color: white; outline: none;">
-            <button onclick="sendChatMessage()" style="background: #ffda76; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; font-weight: bold;">➤</button>
-        </div>
-    </div>
     <script src="main.js"></script>
     <script src="loadHeader.js?v=2.0"></script>
 </body>
