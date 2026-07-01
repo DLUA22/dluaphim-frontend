@@ -12,14 +12,12 @@ document.addEventListener("DOMContentLoaded", function() {
             const isWebView = (userAgent.includes('wv')) || 
                               (userAgent.includes('Android') && userAgent.includes('Version/')) ||
                               (typeof window.Android !== "undefined") ||
-                              (userAgent.includes('Build/'));
-                              
-            if (isWebView) {
-                document.body.classList.add('is-apk');
+                              (userAgent.includes('Build/')); 
+            if (isWebView || sessionStorage.getItem('isAppMode') === 'true') {
+                sessionStorage.setItem('isAppMode', 'true');
+                document.body.classList.add('is-apk'); 
                 const downloadBtn = document.querySelector('.btn-download-tv');
-                if (downloadBtn) {
-                    downloadBtn.style.display = 'none';
-                }
+                if (downloadBtn) downloadBtn.style.display = 'none';
             }
             checkLogin();
             const searchInput = document.querySelector('.search-bar input');
