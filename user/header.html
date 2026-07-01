@@ -54,13 +54,17 @@
         </div>
 </header>
 <div class="app-top-tools">
-    <div class="app-search-mini" onclick="openAppSearch()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        <span>Tìm kiếm phim...</span>
+    <div class="app-search-wrapper">
+        <div class="app-search-btn" onclick="toggleSearchBox()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <div class="search-box-slide" id="search-slide">
+            <input type="text" id="app-search-input" placeholder="Tìm phim..." onkeypress="handleAppSearch(event)">
+            <button onclick="toggleSearchBox()">✕</button>
+        </div>
     </div>
     <div class="app-type-filters">
-        <a href="index.html?type=single">Phim Lẻ</a>
-        <a href="index.html?type=series">Phim Bộ</a>
+        <a href="index.html?type=single" class="filter-btn">Phim Lẻ</a>
+        <a href="index.html?type=series" class="filter-btn">Phim Bộ</a>
     </div>
 </div>
 

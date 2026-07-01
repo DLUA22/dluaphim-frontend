@@ -247,10 +247,15 @@ window.clearAllNoti = async function(event) {
     } catch(e) {}
 }
 
-window.openAppSearch = function() {
-    const keyword = prompt("Nhập tên phim bạn muốn tìm:");
-    
-    if (keyword && keyword.trim() !== "") {
-        window.location.href = `index.html?search=${encodeURIComponent(keyword.trim())}`;
+window.toggleSearchBox = function() {
+    const slide = document.getElementById('search-slide');
+    slide.style.display = (slide.style.display === 'flex') ? 'none' : 'flex';
+    if(slide.style.display === 'flex') document.getElementById('app-search-input').focus();
+};
+
+window.handleAppSearch = function(event) {
+    if (event.key === 'Enter') {
+        const keyword = document.getElementById('app-search-input').value;
+        if (keyword) window.location.href = `index.html?search=${encodeURIComponent(keyword)}`;
     }
-}
+};
