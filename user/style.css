@@ -779,69 +779,6 @@ input:focus,
 .ep-tabs-wrapper::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
 .ep-tabs-wrapper::-webkit-scrollbar-thumb:hover { background: #ffda76; }
 
-/* ========================================== */
-/* BỐ CỤC BOTTOM MENU CHO MOBILE (APP UI)     */
-/* ========================================== */
-.mobile-bottom-nav {
-    display: none; 
-}
-@media screen and (max-width: 768px) {
-    .mobile-bottom-nav {
-        display: flex;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        background-color: #16161a;
-        border-top: 1px solid #333;
-        z-index: 9999;
-        justify-content: space-around;
-        padding: 10px 0;
-        padding-bottom: env(safe-area-inset-bottom, 10px);
-        box-shadow: 0 -5px 15px rgba(0,0,0,0.5);
-    }
-    .mobile-bottom-nav .nav-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-decoration: none;
-        color: #888;
-        font-size: 11px;
-        font-weight: bold;
-        transition: 0.3s;
-    }
-    .mobile-bottom-nav .nav-item .icon {
-        font-size: 20px;
-        margin-bottom: 3px;
-        transition: 0.3s;
-    }
-    .mobile-bottom-nav .nav-item.active,
-    .mobile-bottom-nav .nav-item:active {
-        color: #ffda76;
-    }
-    
-    .mobile-bottom-nav .nav-item.active .icon {
-        transform: translateY(-3px) scale(1.1);
-    }
-    body {
-        padding-bottom: 70px !important; 
-    }
-    .navbar .menu, 
-    .navbar .user-account {
-        display: none !important; 
-    }
-    .navbar {
-        grid-template-columns: auto 1fr !important;
-        grid-template-areas: "logo search" !important;
-    }
-}
-#df-messenger,
-.chatbot-container, 
-#chat-widget, 
-.ai-bot,
-iframe[src*="chat"] {
-    display: none !important;
-}
 /* ======================================================= */
 /* 📱 CHỈ ÁP DỤNG CHO MOBILE APP APK (CÓ CLASS .is-apk)    */
 /* ======================================================= */
