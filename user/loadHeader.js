@@ -8,6 +8,13 @@ document.addEventListener("DOMContentLoaded", function() {
             if (placeholder) {
                 placeholder.innerHTML = data;
             }
+            const isWebView = /(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)|Android.*Version\/[\d\.]+.*Chrome\/[0-9]+|wv/i.test(navigator.userAgent);
+            if (isWebView) {
+                const downloadBtn = document.querySelector('.btn-download-tv');
+                if (downloadBtn) {
+                    downloadBtn.style.display = 'none';
+                }
+            }
             checkLogin();
             const searchInput = document.querySelector('.search-bar input');
             const searchBarContainer = document.querySelector('.search-bar');
