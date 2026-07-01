@@ -289,9 +289,7 @@ a:focus, button:focus, input:focus, .movie-card:focus, .ep-tab-btn:focus, .ep-bt
         position: fixed; top: 0; left: 0; width: 100%; height: 60px;
         background: #0f0f11; padding: 0 15px; z-index: 1000;
     }
-    .is-apk .hero-slider { margin-top: 60px !important; } /* Đẩy banner xuống tránh bị che */
-
-    /* Tìm kiếm Style Netflix */
+    .is-apk .hero-slider { margin-top: 60px !important; }
     .is-apk .app-search-btn { cursor: pointer; padding: 10px; }
     .is-apk .search-box-slide {
         position: fixed; top: 0; left: 0; width: 100%; height: 60px;
@@ -302,6 +300,9 @@ a:focus, button:focus, input:focus, .movie-card:focus, .ep-tab-btn:focus, .ep-bt
 
     /* Nút Lọc */
     .is-apk .filter-btn { color: white; text-decoration: none; font-size: 14px; margin-left: 15px; font-weight: bold; }
+    .is-apk .app-search-mini { display: flex; align-items: center; gap: 8px; background: #25252b; padding: 6px 12px; border-radius: 20px; flex: 1; margin-right: 15px; color: #888; font-size: 13px; cursor: pointer; }
+    .is-apk .app-search-mini svg { width: 16px; height: 16px; }
+    .is-apk .search-bar { display: none; } 
     .is-apk .app-type-filters a { color: #ccc; text-decoration: none; font-size: 13px; font-weight: bold; margin-left: 10px; }
     .is-apk .app-type-filters a:hover { color: #ffda76; }
     .is-apk .mobile-bottom-nav { display: flex; position: fixed; bottom: 0; left: 0; width: 100%; background-color: rgba(22, 22, 26, 0.98); border-top: 1px solid #333; z-index: 9999; justify-content: space-around; padding: 12px 0 8px 0; padding-bottom: env(safe-area-inset-bottom, 12px); }
