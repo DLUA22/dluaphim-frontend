@@ -268,6 +268,12 @@ a:focus, button:focus, input:focus, .movie-card:focus, .ep-tab-btn:focus, .ep-bt
     /* CHỈ ÁP DỤNG CHO ĐIỆN THOẠI CÀI ĐẶT QUA FILE APK APP     */
     /* (Khi file loadHeader.js nhận diện và thêm class is-apk) */
     /* ======================================================= */
+    .is-apk .hero-slider {
+        margin-top: 55px !important; 
+    }
+    .is-apk .main-content {
+        margin-top: 20px !important; 
+    }
     .is-apk .navbar { display: none !important; }
     .is-apk body {
         padding-top: 80px !important;

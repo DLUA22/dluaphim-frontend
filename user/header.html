@@ -54,13 +54,13 @@
         </div>
 </header>
 <div class="app-top-tools">
-    <div class="app-search-mini" onclick="document.querySelector('.search-bar input').focus()">
+    <div class="app-search-mini" onclick="openAppSearch()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         <span>Tìm kiếm phim...</span>
     </div>
     <div class="app-type-filters">
-        <a href="#" onclick="filterMovies('type', 'single')">Phim Lẻ</a>
-        <a href="#" onclick="filterMovies('type', 'series')">Phim Bộ</a>
+        <a href="index.html?type=single">Phim Lẻ</a>
+        <a href="index.html?type=series">Phim Bộ</a>
     </div>
 </div>
 
@@ -69,6 +69,12 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
         <span class="text">Trang chủ</span>
     </a>
+    
+    <a href="#" class="nav-item" onclick="alert('Tính năng Thể loại đang cập nhật!')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        <span class="text">Thể loại</span>
+    </a>
+
     <a href="topviews.html" class="nav-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
         <span class="text">Top Phim</span>

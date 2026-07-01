@@ -246,3 +246,11 @@ window.clearAllNoti = async function(event) {
         }, 100);
     } catch(e) {}
 }
+
+window.openAppSearch = function() {
+    const keyword = prompt("Nhập tên phim bạn muốn tìm:");
+    
+    if (keyword && keyword.trim() !== "") {
+        window.location.href = `index.html?search=${encodeURIComponent(keyword.trim())}`;
+    }
+}
