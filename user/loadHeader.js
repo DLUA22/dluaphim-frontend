@@ -8,7 +8,12 @@ document.addEventListener("DOMContentLoaded", function() {
             if (placeholder) {
                 placeholder.innerHTML = data;
             }
-            const isWebView = /(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)|Android.*Version\/[\d\.]+.*Chrome\/[0-9]+|wv/i.test(navigator.userAgent);
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            const isWebView = (userAgent.includes('wv')) || 
+                              (userAgent.includes('Android') && userAgent.includes('Version/')) ||
+                              (typeof window.Android !== "undefined") ||
+                              (userAgent.includes('Build/'));
+                              
             if (isWebView) {
                 const downloadBtn = document.querySelector('.btn-download-tv');
                 if (downloadBtn) {
